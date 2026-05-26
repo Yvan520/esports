@@ -180,11 +180,11 @@ async function checkRoomLive(platform: string, roomId: string): Promise<{ isLive
 // 游戏 → 各平台房间号映射（与前端 GAME_STREAM_MAP 保持同步）
 const LIVE_GAME_MAP: Record<string, Record<string, string>> = {
   LOL: { bilibili: '7734200', huya: '660000', douyu: '288016' },
-  VALORANT: { bilibili: '22683224', huya: '880001', douyu: '688001' },
-  CS2: { bilibili: '33230', huya: '110001', douyu: '288016' },
-  DOTA2: { bilibili: '3', huya: '210001', douyu: '556601' },
-  PUBG: { bilibili: '25', huya: '410001', douyu: '886601' },
-  HONOR: { bilibili: '89', huya: '330001', douyu: '716601' },
+  VALORANT: { bilibili: '22908869', huya: '880001', douyu: '688001' },
+  CS2: { bilibili: '21495949', huya: '110001', douyu: '288016' },
+  DOTA2: { bilibili: '21495945', huya: '210001', douyu: '556601' },
+  PUBG: { bilibili: '11218604', huya: '410001', douyu: '886601' },
+  HONOR: { bilibili: '21144080', huya: '330001', douyu: '716601' },
 };
 
 // ============================================================

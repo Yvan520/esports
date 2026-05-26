@@ -123,11 +123,11 @@ export default function LivePage({ onBack }: LivePageProps) {
 
   const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; bilibiliRealId: string; huya: string; douyu: string; label: string }> = {
     LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: '7734200', huya: '660000', douyu: '288016', label: '英雄联盟 LPL' },
-    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '234', bilibiliRealId: '22683224', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
-    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '38', bilibiliRealId: '33230', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
-    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '3', bilibiliRealId: '3', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
-    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '25', bilibiliRealId: '25', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
-    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '89', bilibiliRealId: '89', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
+    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '22908869', bilibiliRealId: '22908869', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
+    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '21495949', bilibiliRealId: '21495949', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
+    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '21495945', bilibiliRealId: '21495945', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
+    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '11218604', bilibiliRealId: '11218604', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
+    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '21144080', bilibiliRealId: '21144080', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
   };
 
   function getGameKey(): string {
