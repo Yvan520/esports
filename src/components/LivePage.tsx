@@ -157,7 +157,8 @@ export default function LivePage({ onBack }: LivePageProps) {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = chatEndRef.current?.parentElement?.parentElement;
+    if (container) container.scrollTop = container.scrollHeight;
   }, [chatMessages]);
 
   useEffect(() => {
@@ -280,7 +281,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                   </div>
                 </div>
 
-                <div className="aspect-video bg-slate-950 relative overflow-hidden select-none">
+                <div className="aspect-video bg-slate-950 relative overflow-hidden rounded-t-2xl">
                   {/* Stream embed */}
                   {isPlaying ? (
                     <iframe
@@ -291,13 +292,13 @@ export default function LivePage({ onBack }: LivePageProps) {
                       allowFullScreen
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950" onClick={() => setIsPlaying(true)}>
-                      <div className="flex flex-col items-center gap-3 cursor-pointer">
-                        <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-400/60 flex items-center justify-center hover:bg-cyan-500/30 hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/20">
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950 cursor-pointer" onClick={() => setIsPlaying(true)}>
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/30 to-indigo-500/30 border-2 border-cyan-400/60 flex items-center justify-center hover:scale-110 transition-all shadow-lg shadow-cyan-500/20">
                           <Play className="h-10 w-10 text-cyan-400 ml-1" />
                         </div>
-                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击观看 {selectedMatch.teamA.shortName} vs {selectedMatch.teamB.shortName}</span>
-                        <span className="text-slate-500 text-xs mt-1">{getStreamLabel()}</span>
+                        <span className="text-cyan-300 text-sm font-semibold">点击观看 {selectedMatch.teamA.shortName} vs {selectedMatch.teamB.shortName}</span>
+                        <span className="text-slate-500 text-xs">{getStreamLabel()}</span>
                       </div>
                     </div>
                   )}
@@ -305,99 +306,60 @@ export default function LivePage({ onBack }: LivePageProps) {
                   {embedError && (
                     <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/90">
                       <div className="text-center px-6">
-                        <Tv className="h-16 w-16 text-slate-700 mx-auto mb-3" />
-                        <p className="text-slate-300 text-sm font-semibold mb-1">嵌入加载失败</p>
-                        <p className="text-slate-500 text-xs mb-4">可点击下方按钮在新页面直接观看</p>
+                        <Tv className="h-14 w-14 text-slate-700 mx-auto mb-3" />
+                        <p className="text-slate-300 text-sm mb-4">直播嵌入失败，可换个平台或在原站观看</p>
                         <div className="flex gap-3 justify-center">
-                          <button onClick={() => { setEmbedError(false); setIsPlaying(false); }} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">重试</button>
-                          <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 rounded-xl text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5">
-                            <Tv className="h-3.5 w-3.5" /> 在新页面观看
-                          </a>
+                          <button onClick={() => { setEmbedError(false); setIsPlaying(false); }} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium cursor-pointer">重试</button>
+                          <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 rounded-lg text-xs font-bold cursor-pointer">在新页面观看</a>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20 pointer-events-none z-[1]"></div>
+                  {/* Minimal bottom bar */}
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/80 to-transparent px-4 py-3 flex items-center justify-between z-10 pointer-events-none">
+                    <div className="flex items-center gap-2">
+                      {isPlaying && <span className="h-2 w-2 rounded-full bg-red-500 animate-ping"></span>}
+                      <span className="text-xs text-slate-300 font-medium">{isPlaying ? '直播中' : ''}</span>
+                    </div>
+                    <span className="text-[11px] text-slate-400">{getStreamLabel()}</span>
+                  </div>
+                </div>
+              </div>
 
-                  {/* Scores overlay */}
-                  <div className="absolute inset-x-0 top-[100px] z-[5] flex items-center justify-center pointer-events-none">
-                    <div className="flex items-center justify-between max-w-xl w-full bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur shadow-lg">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{selectedMatch.teamA.logo}</span>
-                        <div className="text-left">
-                          <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamA.shortName}</h4>
-                          <p className="text-[10px] text-slate-400">{selectedMatch.teamA.name}</p>
-                        </div>
-                      </div>
-                      <div className="text-center px-4">
-                        <div className="text-xs text-slate-400 font-mono tracking-widest uppercase mb-1">BO{selectedMatch.bestOf} · {selectedMatch.stage}</div>
-                        <div className="flex items-center gap-3 justify-center">
-                          <span className="text-2xl font-extrabold text-red-500 font-mono">{liveMatchStats.team1Score}</span>
-                          <span className="text-slate-600 font-bold text-sm">VS</span>
-                          <span className="text-2xl font-extrabold text-cyan-400 font-mono">{liveMatchStats.team2Score}</span>
-                        </div>
-                        {selectedMatch.status === 'live' && (
-                          <div className="text-xs font-mono text-yellow-500 mt-1.5 bg-yellow-500/10 px-2 py-0.5 rounded">🕒 比赛时长 {liveMatchStats.gameTime}</div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 flex-row-reverse text-right">
-                        <span className="text-3xl">{selectedMatch.teamB.logo}</span>
-                        <div>
-                          <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamB.shortName}</h4>
-                          <p className="text-[10px] text-slate-400">{selectedMatch.teamB.name}</p>
-                        </div>
-                      </div>
+              {/* Match info bar (below player) */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{selectedMatch.teamA.logo}</span>
+                    <div>
+                      <div className="text-sm font-bold text-slate-100">{selectedMatch.teamA.shortName}</div>
+                      <div className="text-[10px] text-slate-500">{selectedMatch.teamA.name}</div>
                     </div>
                   </div>
-
-                  {/* Gold & Objectives (only for live matches) */}
-                  {selectedMatch.status === 'live' && (
-                    <div className="absolute inset-x-0 bottom-12 z-[5] flex items-center justify-center pointer-events-none">
-                      <div className="grid grid-cols-3 gap-4 max-w-md w-full text-xs font-mono text-center">
-                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                          <div className="text-slate-400 text-[10px]">经济对比</div>
-                          <div className="text-slate-200 flex justify-center gap-2 mt-0.5">
-                            <span className="text-red-400">{liveMatchStats.team1Gold}</span><span>:</span><span className="text-cyan-400">{liveMatchStats.team2Gold}</span>
-                          </div>
-                        </div>
-                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                          <div className="text-slate-400 text-[10px]">纳什男爵</div>
-                          <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
-                            <span className="text-red-400">{liveMatchStats.team1Barons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Barons}</span>
-                          </div>
-                        </div>
-                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                          <div className="text-slate-400 text-[10px]">巨龙数量</div>
-                          <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
-                            <span className="text-red-400">{liveMatchStats.team1Dragons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Dragons}</span>
-                          </div>
-                        </div>
-                      </div>
+                  <div className="text-center px-2">
+                    <div className="text-xs text-slate-500 font-mono">{selectedMatch.tournament} · {selectedMatch.stage}</div>
+                    <div className="flex items-center gap-2 justify-center mt-1">
+                      <span className="text-xl font-extrabold text-red-500">{liveMatchStats.team1Score}</span>
+                      <span className="text-slate-600 text-xs font-bold">VS</span>
+                      <span className="text-xl font-extrabold text-cyan-400">{liveMatchStats.team2Score}</span>
                     </div>
-                  )}
-
-                  {/* Controls */}
-                  <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 px-4 py-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-900 z-10">
-                    <div className="flex items-center gap-3">
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsPlaying(!isPlaying);
-                          setEmbedError(false);
-                        }}
-                        className="cursor-pointer"
-                      >
-                        {isPlaying ? <Pause className="h-4.5 w-4.5 text-cyan-400" /> : <Play className="h-4.5 w-4.5 text-cyan-400 animate-pulse" />}
-                      </span>
-                      {isPlaying && <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
-                      <span className="text-[10px] font-mono">{getStreamLabel() || '第三方平台'}</span>
-                    </div>
-                    <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-slate-900 hover:bg-slate-800 border border-slate-800 px-2 py-1 rounded transition text-slate-400 hover:text-slate-200">
-                      新页面打开 ↗
-                    </a>
+                    {selectedMatch.status === 'live' && (
+                      <div className="text-[10px] font-mono text-yellow-500 mt-0.5">🕒 {liveMatchStats.gameTime}</div>
+                    )}
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{selectedMatch.teamB.logo}</span>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-slate-100">{selectedMatch.teamB.shortName}</div>
+                      <div className="text-[10px] text-slate-500">{selectedMatch.teamB.name}</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <Flame className="h-3.5 w-3.5 text-rose-400" />
+                  <span>{selectedMatch.viewers ? formatViewers(selectedMatch.viewers) : '-'} 观看</span>
+                  {selectedMatch.status === 'live' && <span className="px-2 py-0.5 bg-red-600/10 text-red-400 border border-red-500/20 rounded text-[10px] font-bold ml-1">LIVE</span>}
                 </div>
               </div>
 
