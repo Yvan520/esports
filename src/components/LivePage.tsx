@@ -120,14 +120,31 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [customStreamUrl, setCustomStreamUrl] = useState("");
   const [proxyUrl, setProxyUrl] = useState("https://healthy-mustang-32.yvan520.deno.net");
   const [showProxySettings, setShowProxySettings] = useState(false);
+  const [roomOverrides, setRoomOverrides] = useState<Record<string, string>>({});
+
+  const PROXY_URL = 'https://healthy-mustang-32.yvan520.deno.net';
+
+  // 从代理自动获取B站房间号
+  useEffect(() => {
+    fetch(`${PROXY_URL}/api/rooms`)
+      .then(r => r.json())
+      .then(data => {
+        const overrides: Record<string, string> = {};
+        for (const [game, rooms] of Object.entries(data) as [string, any][]) {
+          if (rooms.bilibili) overrides[game] = rooms.bilibili;
+        }
+        setRoomOverrides(overrides);
+      })
+      .catch(() => {});
+  }, []);
 
   const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; bilibiliRealId: string; huya: string; douyu: string; label: string }> = {
-    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: '7734200', huya: '660000', douyu: '288016', label: '英雄联盟 LPL' },
-    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '22908869', bilibiliRealId: '22908869', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
-    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '21495949', bilibiliRealId: '21495949', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
-    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '21495945', bilibiliRealId: '21495945', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
-    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '11218604', bilibiliRealId: '11218604', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
-    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '21144080', bilibiliRealId: '21144080', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
+    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: roomOverrides['LOL'] || '7734200', huya: '660000', douyu: '288016', label: '英雄联盟 LPL' },
+    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '22908869', bilibiliRealId: roomOverrides['VALORANT'] || '22908869', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
+    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '21495949', bilibiliRealId: roomOverrides['CS2'] || '21495949', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
+    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '21495945', bilibiliRealId: roomOverrides['DOTA2'] || '21495945', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
+    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '11218604', bilibiliRealId: roomOverrides['PUBG'] || '11218604', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
+    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '21144080', bilibiliRealId: roomOverrides['HONOR'] || '21144080', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
   };
 
   function getGameKey(): string {

@@ -112,11 +112,17 @@ async function handleRequest(req: Request): Promise<Response> {
     return json({ status: 'ok', platforms: ['douyu', 'huya', 'bilibili'] });
   }
 
+  // GET /api/rooms - 返回当前所有游戏各平台的房间号（自动发现B站房间）
+  if (path === '/api/rooms') {
+    const rooms = await getRoomMap();
+    return json(rooms);
+  }
+
   // GET /api/live-matches?game=LOL
-  // 返回指定游戏各平台房间的实时状态
+  // 返回指定游戏各平台房间的实时状态（自动发现B站房间）
   if (path === '/api/live-matches') {
     const game = url.searchParams.get('game') || '';
-    const matches = LIVE_GAME_MAP;
+    const matches = await getRoomMap();
     const results: any[] = [];
 
     for (const [gameId, rooms] of Object.entries(matches)) {
@@ -177,15 +183,72 @@ async function checkRoomLive(platform: string, roomId: string): Promise<{ isLive
   }
 }
 
-// 游戏 → 各平台房间号映射（与前端 GAME_STREAM_MAP 保持同步）
-const LIVE_GAME_MAP: Record<string, Record<string, string>> = {
-  LOL: { bilibili: '7734200', huya: '660000', douyu: '288016' },
-  VALORANT: { bilibili: '22908869', huya: '880001', douyu: '688001' },
-  CS2: { bilibili: '21495949', huya: '110001', douyu: '288016' },
-  DOTA2: { bilibili: '21495945', huya: '210001', douyu: '556601' },
-  PUBG: { bilibili: '11218604', huya: '410001', douyu: '886601' },
-  HONOR: { bilibili: '21144080', huya: '330001', douyu: '716601' },
+// ============================================================
+// 自动发现 B站 游戏赛事房间号
+// ============================================================
+
+// 游戏 → B站搜索关键词
+const GAME_KEYWORDS: Record<string, string> = {
+  LOL: 'LPL赛事官方',
+  VALORANT: '无畏契约赛事',
+  CS2: 'CS2完美世界电竞',
+  DOTA2: 'DOTA2完美世界电竞',
+  PUBG: 'PUBG赛事',
+  HONOR: '王者荣耀赛事',
 };
+
+// 虎牙/斗鱼房间号相对稳定，保持硬编码
+const KNOWN_PLATFORMS: Record<string, Record<string, string>> = {
+  LOL: { huya: '660000', douyu: '288016' },
+  VALORANT: { huya: '880001', douyu: '688001' },
+  CS2: { huya: '110001', douyu: '288016' },
+  DOTA2: { huya: '210001', douyu: '556601' },
+  PUBG: { huya: '410001', douyu: '886601' },
+  HONOR: { huya: '330001', douyu: '716601' },
+};
+
+// B站房间自动发现缓存（24小时过期）
+let discoveredCache: { data: Record<string, Record<string, string>>; ts: number } | null = null;
+const DISCOVER_TTL = 86400_000;
+
+async function discoverBilibiliRooms(): Promise<Record<string, string>> {
+  const result: Record<string, string> = {};
+  for (const [game, keyword] of Object.entries(GAME_KEYWORDS)) {
+    try {
+      const res = await fetch(
+        `https://api.bilibili.com/x/web-interface/search/type?search_type=live_room&keyword=${encodeURIComponent(keyword)}`,
+        { headers: { 'User-Agent': 'Mozilla/5.0' } }
+      );
+      const data: any = await res.json();
+      const rooms = data?.data?.result;
+      if (rooms && rooms.length > 0) {
+        // 按关注数排序，取最官方的房间
+        rooms.sort((a: any, b: any) => (b.atten || 0) - (a.atten || 0));
+        result[game] = String(rooms[0].roomid);
+      }
+    } catch {}
+  }
+  return result;
+}
+
+async function getRoomMap(): Promise<Record<string, Record<string, string>>> {
+  if (discoveredCache && Date.now() - discoveredCache.ts < DISCOVER_TTL) {
+    return discoveredCache.data;
+  }
+
+  const bilibiliRooms = await discoverBilibiliRooms();
+  const result: Record<string, Record<string, string>> = {};
+
+  for (const game of Object.keys(KNOWN_PLATFORMS)) {
+    result[game] = { ...KNOWN_PLATFORMS[game] };
+    if (bilibiliRooms[game]) {
+      result[game].bilibili = bilibiliRooms[game];
+    }
+  }
+
+  discoveredCache = { data: result, ts: Date.now() };
+  return result;
+}
 
 // ============================================================
 // 斗鱼 - 获取直播流地址
