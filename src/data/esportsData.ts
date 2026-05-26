@@ -273,7 +273,7 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       // Try to extract team names from title
       let teamA = 'Team A';
       let teamB = 'Team B';
-      const vsMatch = title.match(/([A-Za-z0-9\u4e00-\u9fff]+)\s*v[vs\.]\s*([A-Za-z0-9\u4e00-\u9fff]+)/i);
+      const vsMatch = title.match(/([A-Za-z0-9]{2,8})\s*v[vs\.]\s*([A-Za-z0-9]{2,8})/);
       if (vsMatch) {
         teamA = vsMatch[1];
         teamB = vsMatch[2];
