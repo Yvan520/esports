@@ -11,8 +11,10 @@ import {
   Sparkles,
   Info,
   Send,
+  Settings,
 } from "lucide-react";
 import { MATCHES, GAMES, type Match } from "../data/esportsData";
+import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
   onBack: () => void;
@@ -91,13 +93,15 @@ export default function LivePage({ onBack }: LivePageProps) {
   const PLATFORMS: { id: Platform; label: string; color: string; canEmbed: boolean }[] = [
     { id: 'twitch', label: 'Twitch', color: '#9146FF', canEmbed: true },
     { id: 'youtube', label: 'YouTube', color: '#FF0033', canEmbed: true },
-    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false },
+    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: true },
     { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: true },
     { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false },
     { id: 'custom', label: '自定义', color: '#8B5CF6', canEmbed: true },
   ];
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
   const [customStreamUrl, setCustomStreamUrl] = useState("");
+  const [proxyUrl, setProxyUrl] = useState("https://healthy-mustang-32.yvan520.deno.net");
+  const [showProxySettings, setShowProxySettings] = useState(false);
 
   const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; huya: string; douyu: string; label: string }> = {
     LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', huya: '660001', douyu: '288016', label: '英雄联盟 LPL' },
@@ -126,6 +130,8 @@ export default function LivePage({ onBack }: LivePageProps) {
         return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
       case 'huya':
         return `https://liveshare.huya.com/iframe/${info.huya}`;
+      case 'bilibili':
+        return `https://www.bilibili.com/blackboard/live/live-activity-player.html?cid=${info.bilibili}&quality=4&danmaku=0&fullscreen=1`;
       case 'custom':
         return customStreamUrl;
       default:
@@ -157,7 +163,7 @@ export default function LivePage({ onBack }: LivePageProps) {
 
   function handlePlay() {
     const p = getPlatformInfo();
-    if (!p || p.canEmbed) {
+    if (!p || p.canEmbed || (p.id === 'douyu' && proxyUrl)) {
       setIsPlaying(true);
       setEmbedError(false);
     } else {
@@ -294,12 +300,15 @@ export default function LivePage({ onBack }: LivePageProps) {
                 <div className="aspect-video bg-slate-950 relative overflow-hidden rounded-t-2xl">
                   {/* Stream embed */}
                   {isPlaying ? (
-                    <iframe
-                      key={getStreamEmbedUrl()}
-                      className="absolute inset-0 w-full h-full"
-                      src={getStreamEmbedUrl()}
-                      allow="autoplay; fullscreen"
-                      allowFullScreen
+                    <StreamPlayer
+                      key={`${selectedPlatform}-${getStreamEmbedUrl()}`}
+                      platform={selectedPlatform}
+                      roomId={selectedPlatform !== 'custom' ? GAME_STREAM_MAP[getGameKey()]?.[selectedPlatform] : undefined}
+                      embedUrl={getStreamEmbedUrl()}
+                      streamUrl={selectedPlatform === 'custom' ? customStreamUrl : undefined}
+                      proxyUrl={proxyUrl || undefined}
+                      onError={() => setEmbedError(true)}
+                      onLoad={() => setEmbedError(false)}
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-slate-950 cursor-pointer" onClick={handlePlay}>
@@ -398,7 +407,10 @@ export default function LivePage({ onBack }: LivePageProps) {
                       {!p.canEmbed && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950/60 text-slate-400 border border-slate-700">外链</span>
                       )}
-                      {p.canEmbed && p.id !== 'custom' && (
+                      {p.canEmbed && (p.id === 'bilibili' || p.id === 'huya') && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-950/60 text-violet-400 border border-violet-800">原生视频</span>
+                      )}
+                      {p.canEmbed && p.id !== 'custom' && p.id !== 'bilibili' && p.id !== 'huya' && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">内嵌</span>
                       )}
                     </button>
@@ -434,6 +446,34 @@ export default function LivePage({ onBack }: LivePageProps) {
                     </button>
                   </div>
                 )}
+
+                {/* Proxy 设置 (可选 - 部署 Cloudflare Worker 后用) */}
+                <div className="mt-3 pt-3 border-t border-slate-800/50">
+                  <button
+                    onClick={() => setShowProxySettings(!showProxySettings)}
+                    className="flex items-center gap-1.5 text-[11px] text-slate-500 hover:text-slate-300 transition"
+                  >
+                    <Settings className="h-3 w-3" />
+                    {showProxySettings ? '收起高级设置' : '高级设置 · 直播流代理'}
+                  </button>
+                  {showProxySettings && (
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        type="text"
+                        value={proxyUrl}
+                        onChange={(e) => setProxyUrl(e.target.value)}
+                        placeholder="Cloudflare Worker 地址 (如 https://stream-proxy.xxx.workers.dev)"
+                        className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-500 font-mono"
+                      />
+                      <button
+                        onClick={() => { if (proxyUrl) setShowProxySettings(false); }}
+                        className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg transition cursor-pointer shrink-0"
+                      >
+                        保存
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Match Selector */}
