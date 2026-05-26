@@ -7,8 +7,6 @@ import {
   ChevronRight,
   Play,
   Pause,
-  Volume2,
-  VolumeX,
   Coins,
   Sparkles,
   Info,
@@ -86,10 +84,26 @@ export default function LivePage({ onBack }: LivePageProps) {
   ]);
   
   const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
-  const [videoError, setVideoError] = useState(false);
+  const [streamError, setStreamError] = useState(false);
   const [userChatMessage, setUserChatMessage] = useState("");
+
+  const PREDEFINED_CHANNELS = [
+    { label: "LPL (英雄联盟职业联赛)", url: "https://player.twitch.tv/?channel=lpl&parent=" },
+    { label: "LCK (英雄联盟韩国赛区)", url: "https://player.twitch.tv/?channel=lck&parent=" },
+    { label: "Riot Games (官方频道)", url: "https://player.twitch.tv/?channel=riotgames&parent=" },
+    { label: "VALORANT Esports", url: "https://player.twitch.tv/?channel=valorant_esports&parent=" },
+    { label: "CS:GO ESL", url: "https://player.twitch.tv/?channel=esl_csgo&parent=" },
+    { label: "Dota 2 TI", url: "https://player.twitch.tv/?channel=dota2ti&parent=" },
+  ];
+  const [selectedChannelIdx, setSelectedChannelIdx] = useState(0);
+  const [customStreamUrl, setCustomStreamUrl] = useState("");
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  function getStreamUrl(): string {
+    if (showUrlInput && customStreamUrl) return customStreamUrl;
+    const domain = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    return PREDEFINED_CHANNELS[selectedChannelIdx].url + domain;
+  }
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -216,97 +230,136 @@ export default function LivePage({ onBack }: LivePageProps) {
                   </div>
                 </div>
 
-                <div className="aspect-video bg-slate-950 flex flex-col justify-between relative overflow-hidden select-none">
-                  {/* Actual video element */}
-                  <video
-                    ref={videoRef}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    src="https://www.w3schools.com/html/mov_bbb.mp4"
-                    poster="https://www.w3schools.com/html/pic_trulli.jpg"
-                    playsInline
-                    muted={isMuted}
-                    loop
-                    onError={() => setVideoError(true)}
-                  />
-                  {videoError && (
-                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950">
+                <div className="aspect-video bg-slate-950 relative overflow-hidden select-none">
+                  {/* Stream iframe embed */}
+                  {isPlaying ? (
+                    <iframe
+                      key={getStreamUrl()}
+                      className="absolute inset-0 w-full h-full"
+                      src={getStreamUrl()}
+                      allow="autoplay; fullscreen"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950" onClick={() => setIsPlaying(true)}>
+                      <div className="flex flex-col items-center gap-3 cursor-pointer">
+                        <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-400/60 flex items-center justify-center hover:bg-cyan-500/30 hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/20">
+                          <Play className="h-10 w-10 text-cyan-400 ml-1" />
+                        </div>
+                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击开始观看直播</span>
+                        <span className="text-slate-500 text-xs mt-1">{PREDEFINED_CHANNELS[selectedChannelIdx].label}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {streamError && (
+                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/90">
                       <div className="text-center">
                         <Tv className="h-16 w-16 text-slate-700 mx-auto mb-3" />
-                        <p className="text-slate-400 text-sm">视频流加载失败</p>
-                        <p className="text-slate-600 text-xs mt-1">可尝试刷新页面或检查网络连接</p>
+                        <p className="text-slate-400 text-sm">直播流加载失败</p>
+                        <p className="text-slate-600 text-xs mt-1">该频道可能未开播或链接不可用</p>
+                        <button onClick={() => setStreamError(false)} className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">重试</button>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Channel selector bar */}
+                  <div className="absolute top-0 inset-x-0 z-10 px-4 py-2 flex items-center gap-2 flex-wrap bg-slate-950/70 backdrop-blur-sm border-b border-slate-800/50">
+                    <Tv className="h-4 w-4 text-cyan-400 shrink-0" />
+                    <span className="text-[10px] text-slate-400 font-mono mr-1">直播源:</span>
+                    <div className="flex gap-1 flex-wrap">
+                      {PREDEFINED_CHANNELS.map((ch, i) => (
+                        <button
+                          key={i}
+                          onClick={() => { setSelectedChannelIdx(i); setShowUrlInput(false); setIsPlaying(false); setStreamError(false); }}
+                          className={`text-[10px] px-2 py-1 rounded border transition cursor-pointer whitespace-nowrap ${i === selectedChannelIdx && !showUrlInput ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                        >
+                          {ch.label}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setShowUrlInput(true)}
+                        className={`text-[10px] px-2 py-1 rounded border transition cursor-pointer ${showUrlInput ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                      >
+                        自定义
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Custom URL input */}
+                  {showUrlInput && (
+                    <div className="absolute top-[52px] inset-x-0 z-10 px-4 py-2 bg-slate-950/80 backdrop-blur-sm border-b border-slate-800/50 flex gap-2">
+                      <input
+                        type="text"
+                        value={customStreamUrl}
+                        onChange={(e) => setCustomStreamUrl(e.target.value)}
+                        placeholder="粘贴直播流地址 (支持 Twitch/YouTube/B站等)"
+                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"
+                      />
+                      <button
+                        onClick={() => { if (customStreamUrl) { setIsPlaying(true); setStreamError(false); } }}
+                        className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 text-xs font-bold rounded-lg transition cursor-pointer"
+                      >
+                        应用
+                      </button>
                     </div>
                   )}
 
                   {/* Gradient overlay for readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none z-[1]"></div>
-
-                  {/* Play overlay when paused */}
-                  {!isPlaying && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/40 transition-all duration-300">
-                      <div
-                        className="flex flex-col items-center gap-3 group cursor-pointer"
-                        onClick={() => {
-                          setIsPlaying(true);
-                          videoRef.current?.play();
-                        }}
-                      >
-                        <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-400/60 flex items-center justify-center group-hover:bg-cyan-500/30 group-hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/20">
-                          <Play className="h-10 w-10 text-cyan-400 ml-1" />
-                        </div>
-                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击开始观看直播</span>
-                      </div>
-                    </div>
-                  )}
+                  <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20 pointer-events-none ${showUrlInput ? 'z-[1]' : 'z-[1]'}`}></div>
 
                   {/* Scores overlay */}
-                  <div className="relative z-[5] flex items-center justify-between max-w-xl mx-auto w-full bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur shadow-lg mt-12">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{selectedMatch.teamA.logo}</span>
-                      <div className="text-left">
-                        <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamA.shortName}</h4>
-                        <p className="text-[10px] text-slate-400">{selectedMatch.teamA.name}</p>
+                  <div className="absolute inset-x-0 top-[100px] z-[5] flex items-center justify-center pointer-events-none">
+                    <div className="flex items-center justify-between max-w-xl w-full bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{selectedMatch.teamA.logo}</span>
+                        <div className="text-left">
+                          <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamA.shortName}</h4>
+                          <p className="text-[10px] text-slate-400">{selectedMatch.teamA.name}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-center px-4">
-                      <div className="text-xs text-slate-400 font-mono tracking-widest uppercase mb-1">BO{selectedMatch.bestOf} · {selectedMatch.stage}</div>
-                      <div className="flex items-center gap-3 justify-center">
-                        <span className="text-2xl font-extrabold text-red-500 font-mono">{liveMatchStats.team1Score}</span>
-                        <span className="text-slate-600 font-bold text-sm">VS</span>
-                        <span className="text-2xl font-extrabold text-cyan-400 font-mono">{liveMatchStats.team2Score}</span>
+                      <div className="text-center px-4">
+                        <div className="text-xs text-slate-400 font-mono tracking-widest uppercase mb-1">BO{selectedMatch.bestOf} · {selectedMatch.stage}</div>
+                        <div className="flex items-center gap-3 justify-center">
+                          <span className="text-2xl font-extrabold text-red-500 font-mono">{liveMatchStats.team1Score}</span>
+                          <span className="text-slate-600 font-bold text-sm">VS</span>
+                          <span className="text-2xl font-extrabold text-cyan-400 font-mono">{liveMatchStats.team2Score}</span>
+                        </div>
+                        {selectedMatch.status === 'live' && (
+                          <div className="text-xs font-mono text-yellow-500 mt-1.5 bg-yellow-500/10 px-2 py-0.5 rounded">🕒 比赛时长 {liveMatchStats.gameTime}</div>
+                        )}
                       </div>
-                      {selectedMatch.status === 'live' && (
-                        <div className="text-xs font-mono text-yellow-500 mt-1.5 bg-yellow-500/10 px-2 py-0.5 rounded">🕒 比赛时长 {liveMatchStats.gameTime}</div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-3 flex-row-reverse text-right">
-                      <span className="text-3xl">{selectedMatch.teamB.logo}</span>
-                      <div>
-                        <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamB.shortName}</h4>
-                        <p className="text-[10px] text-slate-400">{selectedMatch.teamB.name}</p>
+                      <div className="flex items-center gap-3 flex-row-reverse text-right">
+                        <span className="text-3xl">{selectedMatch.teamB.logo}</span>
+                        <div>
+                          <h4 className="font-extrabold text-slate-100 text-sm sm:text-base">{selectedMatch.teamB.shortName}</h4>
+                          <p className="text-[10px] text-slate-400">{selectedMatch.teamB.name}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Gold & Objectives (only for live matches) */}
                   {selectedMatch.status === 'live' && (
-                    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto w-full relative z-[5] mt-auto mb-4 text-xs font-mono text-center">
-                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                        <div className="text-slate-400 text-[10px]">经济对比</div>
-                        <div className="text-slate-200 flex justify-center gap-2 mt-0.5">
-                          <span className="text-red-400">{liveMatchStats.team1Gold}</span><span>:</span><span className="text-cyan-400">{liveMatchStats.team2Gold}</span>
+                    <div className="absolute inset-x-0 bottom-12 z-[5] flex items-center justify-center pointer-events-none">
+                      <div className="grid grid-cols-3 gap-4 max-w-md w-full text-xs font-mono text-center">
+                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
+                          <div className="text-slate-400 text-[10px]">经济对比</div>
+                          <div className="text-slate-200 flex justify-center gap-2 mt-0.5">
+                            <span className="text-red-400">{liveMatchStats.team1Gold}</span><span>:</span><span className="text-cyan-400">{liveMatchStats.team2Gold}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                        <div className="text-slate-400 text-[10px]">纳什男爵</div>
-                        <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
-                          <span className="text-red-400">{liveMatchStats.team1Barons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Barons}</span>
+                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
+                          <div className="text-slate-400 text-[10px]">纳什男爵</div>
+                          <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
+                            <span className="text-red-400">{liveMatchStats.team1Barons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Barons}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
-                        <div className="text-slate-400 text-[10px]">巨龙数量</div>
-                        <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
-                          <span className="text-red-400">{liveMatchStats.team1Dragons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Dragons}</span>
+                        <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
+                          <div className="text-slate-400 text-[10px]">巨龙数量</div>
+                          <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
+                            <span className="text-red-400">{liveMatchStats.team1Dragons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Dragons}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -318,38 +371,19 @@ export default function LivePage({ onBack }: LivePageProps) {
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (isPlaying) {
-                            videoRef.current?.pause();
-                            setIsPlaying(false);
-                          } else {
-                            videoRef.current?.play();
-                            setIsPlaying(true);
-                          }
+                          setIsPlaying(!isPlaying);
+                          setStreamError(false);
                         }}
                         className="cursor-pointer"
                       >
                         {isPlaying ? <Pause className="h-4.5 w-4.5 text-cyan-400" /> : <Play className="h-4.5 w-4.5 text-cyan-400 animate-pulse" />}
                       </span>
-                      <span className="relative">
-                        <span
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (videoRef.current) {
-                              videoRef.current.muted = !isMuted;
-                              setIsMuted(!isMuted);
-                            }
-                          }}
-                          className="cursor-pointer"
-                        >
-                          {isMuted ? <VolumeX className="h-4.5 w-4.5 text-slate-500" /> : <Volume2 className="h-4.5 w-4.5 text-slate-400" />}
-                        </span>
-                      </span>
                       {isPlaying && <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
-                      <span className="text-[10px] font-mono">实时推流：超清 1080P / 60FPS</span>
+                      <span className="text-[10px] font-mono">第三方直播平台嵌入</span>
                     </div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800">网络延迟: 8ms</span>
-                      <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-emerald-400 font-semibold">H.265 加速</span>
+                      <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800">缓冲延迟: 实时</span>
+                      <span className="text-[10px] bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-emerald-400 font-semibold">自适应码率</span>
                     </div>
                   </div>
                 </div>
