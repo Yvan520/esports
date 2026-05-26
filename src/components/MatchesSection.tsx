@@ -1,10 +1,9 @@
-import { useState } from 'react';
-import { MATCHES, GameType, Match } from '../data/esportsData';
+import { MATCHES, GameType } from '../data/esportsData';
 import MatchCard from './MatchCard';
 
 interface MatchesSectionProps {
   activeGame: GameType | 'ALL';
-  onWatchMatch?: (match: Match) => void;
+  onWatchMatch?: () => void;
 }
 
 export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {

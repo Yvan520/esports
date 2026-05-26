@@ -1,8 +1,8 @@
-import { MATCHES, GAMES, GameType, Match } from '../data/esportsData';
+import { MATCHES, GAMES, GameType } from '../data/esportsData';
 
 interface LiveSectionProps {
   activeGame: GameType | 'ALL';
-  onWatchMatch?: (match: Match) => void;
+  onWatchMatch?: () => void;
 }
 
 function formatViewers(n: number): string {
@@ -36,7 +36,7 @@ export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionPro
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {liveMatches.map((match, idx) => (
-          <LiveMatchCard key={match.id} match={match} featured={idx === 0} onWatch={() => onWatchMatch?.(match)} />
+          <LiveMatchCard key={match.id} match={match} featured={idx === 0} onWatch={onWatchMatch} />
         ))}
       </div>
     </section>

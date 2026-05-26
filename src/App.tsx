@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameType, MATCHES, Match } from './data/esportsData';
+import { GameType } from './data/esportsData';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LiveTicker from './components/LiveTicker';
@@ -14,7 +14,7 @@ import Footer from './components/Footer';
 export default function App() {
   const [activeGame, setActiveGame] = useState<GameType | 'ALL'>('ALL');
   const [activeSection, setActiveSection] = useState('home');
-  const [liveMatch, setLiveMatch] = useState<Match | null>(null);
+  const [showLivePage, setShowLivePage] = useState(false);
 
   const liveRef = useRef<HTMLDivElement>(null);
   const matchesRef = useRef<HTMLDivElement>(null);
@@ -69,19 +69,52 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleWatchMatch = (match: Match) => {
-    setLiveMatch(match);
+  const handleWatchMatch = () => {
+    setShowLivePage(true);
     window.scrollTo({ top: 0 });
   };
 
   const handleBackFromLive = () => {
-    setLiveMatch(null);
-    window.location.hash = '';
-    history.replaceState(null, '', window.location.pathname + window.location.search);
+    setShowLivePage(false);
   };
 
-  if (liveMatch) {
-    return <LivePage match={liveMatch} onBack={handleBackFromLive} />;
+  if (showLivePage) {
+    return (
+      <div className="min-h-screen cyber-gradient">
+        {/* Nav */}
+        <nav
+          className="fixed top-0 left-0 right-0 z-50"
+          style={{
+            background: 'rgba(5,8,16,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(0,245,255,0.15)',
+          }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+            <div className="flex items-center gap-3 cursor-pointer" onClick={handleBackFromLive}>
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black"
+                style={{
+                  background: 'linear-gradient(135deg, #00f5ff, #bf00ff)',
+                  boxShadow: '0 0 15px rgba(0,245,255,0.5)',
+                }}
+              >⚡</div>
+              <div className="flex flex-col leading-none">
+                <span className="font-black text-sm tracking-widest uppercase"
+                  style={{ fontFamily: "'Orbitron', monospace", color: '#00f5ff', textShadow: '0 0 10px #00f5ff' }}>
+                  ESPORTS
+                </span>
+                <span className="text-[10px] text-gray-400 tracking-[0.2em] font-medium">电竞赛事中心</span>
+              </div>
+            </div>
+            <button onClick={handleBackFromLive} className="btn-cyber">← 返回主页</button>
+          </div>
+        </nav>
+        <main className="pt-20">
+          <LivePage />
+        </main>
+      </div>
+    );
   }
 
   return (

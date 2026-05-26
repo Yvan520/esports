@@ -2,7 +2,7 @@ import { Match, GAMES } from '../data/esportsData';
 
 interface MatchCardProps {
   match: Match;
-  onWatchMatch?: (match: Match) => void;
+  onWatchMatch?: () => void;
 }
 
 function formatViewers(n: number): string {
@@ -16,7 +16,7 @@ export default function MatchCard({ match, onWatchMatch }: MatchCardProps) {
   const isFinished = match.status === 'finished';
 
   function handleClick() {
-    if (isLive && onWatchMatch) onWatchMatch(match);
+    if (isLive && onWatchMatch) onWatchMatch();
   }
 
   return (
