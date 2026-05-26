@@ -112,7 +112,13 @@ export default function MatchCard({ match }: MatchCardProps) {
             <div />
           )}
           {isLive && (
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+            <button
+              onClick={() => {
+                const el = document.getElementById('live');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+            >
               ▶ 观看直播
             </button>
           )}

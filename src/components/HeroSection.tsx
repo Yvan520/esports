@@ -90,7 +90,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
           {/* CTA buttons */}
           <div className="flex flex-wrap gap-4">
             <button
-              onClick={() => onSectionChange('matches')}
+              onClick={() => onSectionChange('live')}
               className="flex items-center gap-2 px-8 py-4 rounded-xl text-white font-bold text-lg cursor-pointer transition-all hover:scale-105 hover:shadow-2xl"
               style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 30px rgba(99,102,241,0.4)' }}
             >

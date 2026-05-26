@@ -13,6 +13,7 @@ export default function Navbar({ activeGame, onGameChange, activeSection, onSect
 
   const sections = [
     { id: 'home', label: '首页' },
+    { id: 'live', label: '直播赛事' },
     { id: 'matches', label: '赛程' },
     { id: 'tournaments', label: '赛事' },
     { id: 'standings', label: '积分榜' },

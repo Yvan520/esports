@@ -3,6 +3,7 @@ import { GameType } from './data/esportsData';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LiveTicker from './components/LiveTicker';
+import LiveSection from './components/LiveSection';
 import MatchesSection from './components/MatchesSection';
 import TournamentsSection from './components/TournamentsSection';
 import StandingsSection from './components/StandingsSection';
@@ -13,6 +14,7 @@ export default function App() {
   const [activeGame, setActiveGame] = useState<GameType | 'ALL'>('ALL');
   const [activeSection, setActiveSection] = useState('home');
 
+  const liveRef = useRef<HTMLDivElement>(null);
   const matchesRef = useRef<HTMLDivElement>(null);
   const tournamentsRef = useRef<HTMLDivElement>(null);
   const standingsRef = useRef<HTMLDivElement>(null);
@@ -25,6 +27,7 @@ export default function App() {
       return;
     }
     const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
+      live: liveRef,
       matches: matchesRef,
       tournaments: tournamentsRef,
       standings: standingsRef,
@@ -48,6 +51,7 @@ export default function App() {
         { id: 'standings', ref: standingsRef },
         { id: 'tournaments', ref: tournamentsRef },
         { id: 'matches', ref: matchesRef },
+        { id: 'live', ref: liveRef },
       ];
       for (const { id, ref } of refs) {
         if (ref.current) {
@@ -82,6 +86,10 @@ export default function App() {
 
       {/* Main content */}
       <main>
+        <div ref={liveRef}>
+          <LiveSection activeGame={activeGame} />
+        </div>
+
         <div ref={matchesRef}>
           <MatchesSection activeGame={activeGame} />
         </div>
