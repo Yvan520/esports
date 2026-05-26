@@ -10,11 +10,33 @@ import TournamentsSection from './components/TournamentsSection';
 import StandingsSection from './components/StandingsSection';
 import NewsSection from './components/NewsSection';
 import Footer from './components/Footer';
+import SEO from './components/SEO';
+
+const SECTION_TITLES: Record<string, string> = {
+  home: '首页 - 全球电竞赛事直播',
+  live: '直播赛事 - 实时比分',
+  matches: '赛程 - 比赛日历',
+  tournaments: '赛事 - 锦标赛信息',
+  standings: '积分榜 - 战队排名',
+  news: '最新资讯 - 电竞新闻',
+};
 
 export default function App() {
   const [activeGame, setActiveGame] = useState<GameType | 'ALL'>('ALL');
   const [activeSection, setActiveSection] = useState('home');
   const [showLivePage, setShowLivePage] = useState(false);
+
+  useEffect(() => {
+    const base = 'GameWayz 电竞赛事中心';
+    const sectionLabel = SECTION_TITLES[activeSection] || '首页';
+    document.title = `${sectionLabel} | ${base}`;
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (showLivePage) {
+      document.title = '赛事直播大厅 | GameWayz 电竞赛事中心';
+    }
+  }, [showLivePage]);
 
   const liveRef = useRef<HTMLDivElement>(null);
   const matchesRef = useRef<HTMLDivElement>(null);
@@ -84,6 +106,7 @@ export default function App() {
 
   return (
     <div style={{ background: '#080814', minHeight: '100vh', fontFamily: "'Noto Sans SC', sans-serif" }}>
+      <SEO />
       <Navbar
         activeGame={activeGame}
         onGameChange={setActiveGame}
