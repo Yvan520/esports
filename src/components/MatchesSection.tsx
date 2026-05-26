@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { MATCHES, GameType } from '../data/esportsData';
+import { MATCHES, GameType, Match } from '../data/esportsData';
 import MatchCard from './MatchCard';
 
 interface MatchesSectionProps {
   activeGame: GameType | 'ALL';
+  onWatchMatch?: (match: Match) => void;
 }
 
-export default function MatchesSection({ activeGame }: MatchesSectionProps) {
+export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
 
   const filtered = MATCHES.filter(m => {
@@ -72,7 +73,7 @@ export default function MatchesSection({ activeGame }: MatchesSectionProps) {
       {filtered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(match => (
-            <MatchCard key={match.id} match={match} />
+            <MatchCard key={match.id} match={match} onWatchMatch={onWatchMatch} />
           ))}
         </div>
       ) : (

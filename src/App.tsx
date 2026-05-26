@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameType } from './data/esportsData';
+import { GameType, MATCHES, Match } from './data/esportsData';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LiveTicker from './components/LiveTicker';
 import LiveSection from './components/LiveSection';
+import LivePage from './components/LivePage';
 import MatchesSection from './components/MatchesSection';
 import TournamentsSection from './components/TournamentsSection';
 import StandingsSection from './components/StandingsSection';
@@ -13,6 +14,7 @@ import Footer from './components/Footer';
 export default function App() {
   const [activeGame, setActiveGame] = useState<GameType | 'ALL'>('ALL');
   const [activeSection, setActiveSection] = useState('home');
+  const [liveMatch, setLiveMatch] = useState<Match | null>(null);
 
   const liveRef = useRef<HTMLDivElement>(null);
   const matchesRef = useRef<HTMLDivElement>(null);
@@ -67,6 +69,21 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleWatchMatch = (match: Match) => {
+    setLiveMatch(match);
+    window.scrollTo({ top: 0 });
+  };
+
+  const handleBackFromLive = () => {
+    setLiveMatch(null);
+    window.location.hash = '';
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  };
+
+  if (liveMatch) {
+    return <LivePage match={liveMatch} onBack={handleBackFromLive} />;
+  }
+
   return (
     <div style={{ background: '#080814', minHeight: '100vh', fontFamily: "'Noto Sans SC', sans-serif" }}>
       <Navbar
@@ -87,11 +104,11 @@ export default function App() {
       {/* Main content */}
       <main>
         <div ref={liveRef}>
-          <LiveSection activeGame={activeGame} />
+          <LiveSection activeGame={activeGame} onWatchMatch={handleWatchMatch} />
         </div>
 
         <div ref={matchesRef}>
-          <MatchesSection activeGame={activeGame} />
+          <MatchesSection activeGame={activeGame} onWatchMatch={handleWatchMatch} />
         </div>
 
         {/* Divider */}

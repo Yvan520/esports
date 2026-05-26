@@ -2,6 +2,7 @@ import { Match, GAMES } from '../data/esportsData';
 
 interface MatchCardProps {
   match: Match;
+  onWatchMatch?: (match: Match) => void;
 }
 
 function formatViewers(n: number): string {
@@ -9,20 +10,18 @@ function formatViewers(n: number): string {
   return n.toString();
 }
 
-export default function MatchCard({ match }: MatchCardProps) {
+export default function MatchCard({ match, onWatchMatch }: MatchCardProps) {
   const game = GAMES.find(g => g.id === match.game);
   const isLive = match.status === 'live';
   const isFinished = match.status === 'finished';
 
-  function scrollToLive() {
-    window.location.hash = `live-${match.id}`;
-    const el = document.getElementById('live');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  function handleClick() {
+    if (isLive && onWatchMatch) onWatchMatch(match);
   }
 
   return (
     <div
-      onClick={isLive ? scrollToLive : undefined}
+      onClick={handleClick}
       className="rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group"
       style={{
         cursor: isLive ? 'pointer' : 'default',
