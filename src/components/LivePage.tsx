@@ -13,7 +13,7 @@ import {
   Send,
   Settings,
 } from "lucide-react";
-import { MATCHES, GAMES, type Match } from "../data/esportsData";
+import { MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
 import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
@@ -47,10 +47,28 @@ const BOT_CHAT_TEMPLATES = [
 ];
 
 export default function LivePage({ onBack }: LivePageProps) {
-  const liveMatches = MATCHES.filter(m => m.status === 'live');
-  const defaultMatch = liveMatches[0] || MATCHES[0];
+  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLiveMatches().then(live => {
+      setAllMatches(live);
+      setDataLoading(false);
+    });
+  }, []);
+
+  const liveMatches = allMatches.filter(m => m.status === 'live');
+  const defaultMatch = liveMatches[0] || allMatches[0];
 
   const [selectedMatch, setSelectedMatch] = useState<Match>(defaultMatch);
+
+  // Sync selectedMatch when live data loads
+  useEffect(() => {
+    const live = allMatches.filter(m => m.status === 'live');
+    if (live.length > 0) {
+      setSelectedMatch(live[0]);
+    }
+  }, [allMatches]);
   const [notification, setNotification] = useState<string | null>("欢迎来到赛事直播大厅！参与实时预测即可获得竞技积分。");
 
   const game = GAMES.find(g => g.id === selectedMatch.game);
@@ -240,8 +258,6 @@ export default function LivePage({ onBack }: LivePageProps) {
       setChatMessages((prev) => [...prev, { id: Date.now() + 1, user: "电竞智囊团", msg: `@我 (You) ${replies[Math.floor(Math.random() * replies.length)]}`, vip: false, team: "Neutral" }]);
     }, 1200);
   };
-
-  const allMatches = MATCHES;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950">

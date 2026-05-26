@@ -112,8 +112,80 @@ async function handleRequest(req: Request): Promise<Response> {
     return json({ status: 'ok', platforms: ['douyu', 'huya', 'bilibili'] });
   }
 
+  // GET /api/live-matches?game=LOL
+  // 返回指定游戏各平台房间的实时状态
+  if (path === '/api/live-matches') {
+    const game = url.searchParams.get('game') || '';
+    const matches = LIVE_GAME_MAP;
+    const results: any[] = [];
+
+    for (const [gameId, rooms] of Object.entries(matches)) {
+      if (game && gameId !== game) continue;
+      for (const [platform, roomId] of Object.entries(rooms)) {
+        if (!roomId) continue;
+        try {
+          const status = await checkRoomLive(String(platform), String(roomId));
+          results.push({ game: gameId, platform, roomId, ...status });
+        } catch {
+          results.push({ game: gameId, platform, roomId, isLive: false, title: null, viewers: 0 });
+        }
+      }
+    }
+    return json(results);
+  }
+
   return new Response('Not Found', { status: 404 });
 }
+
+async function checkRoomLive(platform: string, roomId: string): Promise<{ isLive: boolean; title: string | null; viewers: number; roomInfo?: any }> {
+  switch (platform) {
+    case 'douyu': {
+      const res = await fetch(`https://www.douyu.com/${roomId}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      });
+      const html = await res.text();
+      const isLive = html.includes('"show_status":1') || html.includes('is_show":1');
+      const title = html.match(/"room_name":"([^"]+)"/)?.[1] || null;
+      const viewers = parseInt(html.match(/"views":(\d+)/)?.[1] || '0', 10);
+      return { isLive, title, viewers };
+    }
+    case 'bilibili': {
+      const res = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`);
+      const data: any = await res.json();
+      if (data.data) {
+        return {
+          isLive: data.data.live_status === 1,
+          title: data.data.title || null,
+          viewers: data.data.online || 0,
+          roomInfo: data.data,
+        };
+      }
+      return { isLive: false, title: null, viewers: 0 };
+    }
+    case 'huya': {
+      const res = await fetch(`https://www.huya.com/${roomId}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      });
+      const html = await res.text();
+      const isLive = html.includes('isLive=true') || html.includes('"liveStatus":"ON"');
+      const title = html.match(/title:"([^"]+)"/)?.[1] || html.match(/"introduction":"([^"]+)"/)?.[1] || null;
+      const viewers = parseInt(html.match(/"totalCount":(\d+)/)?.[1] || html.match(/"popular":(\d+)/)?.[1] || '0', 10);
+      return { isLive, title, viewers };
+    }
+    default:
+      return { isLive: false, title: null, viewers: 0 };
+  }
+}
+
+// 游戏 → 各平台房间号映射（与前端 GAME_STREAM_MAP 保持同步）
+const LIVE_GAME_MAP: Record<string, Record<string, string>> = {
+  LOL: { bilibili: '7734200', huya: '660000', douyu: '288016' },
+  VALORANT: { bilibili: '22683224', huya: '880001', douyu: '688001' },
+  CS2: { bilibili: '33230', huya: '110001', douyu: '288016' },
+  DOTA2: { bilibili: '3', huya: '210001', douyu: '556601' },
+  PUBG: { bilibili: '25', huya: '410001', douyu: '886601' },
+  HONOR: { bilibili: '89', huya: '330001', douyu: '716601' },
+};
 
 // ============================================================
 // 斗鱼 - 获取直播流地址

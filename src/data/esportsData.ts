@@ -240,6 +240,70 @@ export const STANDINGS: Team[] = [
   { id: 's28', name: '重庆狼队', shortName: 'Wolves', logo: '🐺', region: '中国', wins: 18, losses: 14, winRate: 56.3, points: 36, game: 'HONOR' },
 ];
 
+// 从 Deno proxy 获取实时比赛数据
+const PROXY_URL = 'https://healthy-mustang-32.yvan520.deno.net';
+
+export async function fetchLiveMatches(): Promise<Match[]> {
+  try {
+    const res = await fetch(`${PROXY_URL}/api/live-matches`);
+    if (!res.ok) throw new Error('Failed to fetch');
+    const rooms: any[] = await res.json();
+
+    // 按 game 分组，取每个游戏中第一个 live 的房间
+    const liveByGame = new Map<string, any>();
+    for (const room of rooms) {
+      if (room.isLive && !liveByGame.has(room.game)) {
+        liveByGame.set(room.game, room);
+      }
+    }
+
+    if (liveByGame.size === 0) return MATCHES; // fallback
+
+    const liveMatches: Match[] = [];
+    let idCounter = 1000;
+
+    for (const [gameId, room] of liveByGame) {
+      const gameInfo = GAMES.find(g => g.id === gameId);
+      if (!gameInfo) continue;
+
+      // Parse title like "LPL 2026夏季赛 JDG vs BLG" or use raw title
+      const title = room.title || `${gameInfo.name} 直播中`;
+      const viewers = room.viewers || 0;
+
+      // Try to extract team names from title (rough parse)
+      let teamA = 'Team A';
+      let teamB = 'Team B';
+      const vsMatch = title.match(/(.+?)\s*v[vs\.]\s*(.+)/i);
+      if (vsMatch) {
+        teamA = vsMatch[1].trim().split(' ').pop() || 'Team A';
+        teamB = vsMatch[2].trim().split(' ')[0] || 'Team B';
+      }
+
+      liveMatches.push({
+        id: `live-${idCounter++}`,
+        game: gameId as GameType,
+        tournament: `${gameInfo.name} Esports`,
+        stage: room.platform === 'bilibili' ? 'B站直播' : room.platform === 'huya' ? '虎牙直播' : '斗鱼直播',
+        teamA: { name: teamA, shortName: teamA, logo: gameInfo.emoji },
+        teamB: { name: teamB, shortName: teamB, logo: gameInfo.emoji },
+        status: 'live',
+        startTime: '直播中',
+        viewers: viewers || undefined,
+        bestOf: 1,
+      });
+    }
+
+    if (liveMatches.length > 0) {
+      // Merge with upcoming/finished from static data
+      const staticUpcoming = MATCHES.filter(m => m.status !== 'live');
+      return [...liveMatches, ...staticUpcoming];
+    }
+    return MATCHES;
+  } catch {
+    return MATCHES; // fallback to static data
+  }
+}
+
 export const NEWS: News[] = [
   {
     id: 'n1',
