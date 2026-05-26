@@ -92,7 +92,7 @@ export default function LivePage({ onBack }: LivePageProps) {
     { id: 'twitch', label: 'Twitch', color: '#9146FF', canEmbed: true },
     { id: 'youtube', label: 'YouTube', color: '#FF0033', canEmbed: true },
     { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false },
-    { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: false },
+    { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: true },
     { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false },
     { id: 'custom', label: '自定义', color: '#8B5CF6', canEmbed: true },
   ];
@@ -124,6 +124,8 @@ export default function LivePage({ onBack }: LivePageProps) {
     switch (selectedPlatform) {
       case 'youtube':
         return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
+      case 'huya':
+        return `https://liveshare.huya.com/iframe/${info.huya}`;
       case 'custom':
         return customStreamUrl;
       default:
