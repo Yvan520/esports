@@ -1,62 +1,16 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-
-const modules = Object.entries(import.meta.glob("../../content/news/*.md", { eager: true }));
-const sorted = modules
-  .map(([path, mod]) => ({ path, ...mod.frontmatter, slug: path.split("/").pop().replace(".md", "") }))
-  .sort((a, b) => (b.date || "").localeCompare(a.date || ""));
-
-const games: Record<string, string> = {
-  LOL: "⚔️ 英雄联盟",
-  VALORANT: "🔫 VALORANT",
-  CS2: "🎯 CS2",
-  DOTA2: "🗡️ DOTA2",
-  PUBG: "🪖 PUBG",
-  HONOR: "👑 王者荣耀",
-};
-const tagColors: Record<string, string> = {
-  "赛事前瞻": "#22c55e",
-  "版本分析": "#06b4d",
-  "行业观察": "#f59e0b",
-  "战队专题": "#a78bfa",
-  "赛事速报": "#ef4444",
-  "转会新闻": "#f97316",
-  "攻略指南": "#6366f1",
-};
 ---
 
-<BaseLayout title="电竞资讯 - 最新新闻">
+<BaseLayout title="电竞资讯 - 即将上线">
   <main class="min-h-screen" style="background:#080814;font-family:'Noto Sans SC',sans-serif">
-    <div class="max-w-4xl mx-auto px-4 py-16">
+    <div class="max-w-4xl mx-auto px-4 py-16 text-center">
       <a href="/" class="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 mb-8 text-sm">&larr; 返回首页</a>
-      <h1 class="text-4xl font-black text-white mb-2" style="font-family:Rajdhani,sans-serif">
+      <div class="text-6xl mb-6 mt-20">📰</div>
+      <h1 class="text-4xl font-black text-white mb-4" style="font-family:Rajdhani,sans-serif">
         电竞<span style="color:#a5b4fc">资讯</span>
       </h1>
-      <p class="text-gray-500 text-sm mb-10">最新赛事动态、深度分析、行业观察</p>
-
-      <div class="space-y-6">
-        {sorted.map((a) => {
-          const tc = tagColors[a.tag] || "#6366f1";
-          return (
-            <a href={`/news/${a.slug}/`} class="block group">
-              <article class="flex gap-5 p-5 rounded-2xl transition-all duration-300 hover:scale-[1.01] hover:-translate-y-0.5" style="background:rgba(15,15,35,0.8);border:1px solid rgba(255,255,255,0.06)">
-                <div class="w-16 h-16 rounded-xl flex items-center justify-center text-3xl flex-shrink-0 group-hover:scale-110 transition-transform" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.15))">
-                  {a.image || "📰"}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-2 flex-wrap">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full" style={`color:${tc};background:${tc}1e`}>{a.tag}</span>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="color:#6366f1;background:rgba(99,102,241,0.12)">{games[a.game] || a.game}</span>
-                    <span class="text-xs text-gray-600">{a.date}</span>
-                  </div>
-                  <h2 class="text-white font-bold text-base leading-snug mb-1 group-hover:text-indigo-300 transition-colors line-clamp-2">{a.title}</h2>
-                  <p class="text-gray-400 text-sm leading-relaxed line-clamp-2">{a.description}</p>
-                </div>
-              </article>
-            </a>
-          );
-        })}
-      </div>
+      <p class="text-gray-500 text-lg">即将上线，敬请期待</p>
     </div>
   </main>
 </BaseLayout>
