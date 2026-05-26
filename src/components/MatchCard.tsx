@@ -14,10 +14,17 @@ export default function MatchCard({ match }: MatchCardProps) {
   const isLive = match.status === 'live';
   const isFinished = match.status === 'finished';
 
+  function scrollToLive() {
+    const el = document.getElementById('live');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
     <div
-      className="rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 cursor-pointer group"
+      onClick={isLive ? scrollToLive : undefined}
+      className="rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 group"
       style={{
+        cursor: isLive ? 'pointer' : 'default',
         background: isLive
           ? 'linear-gradient(135deg, rgba(15,15,35,0.95), rgba(20,10,40,0.95))'
           : 'rgba(15,15,35,0.8)',
@@ -113,10 +120,7 @@ export default function MatchCard({ match }: MatchCardProps) {
           )}
           {isLive && (
             <button
-              onClick={() => {
-                const el = document.getElementById('live');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onClick={e => { e.stopPropagation(); scrollToLive(); }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white cursor-pointer hover:opacity-90 transition-all" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
             >
               ▶ 观看直播
