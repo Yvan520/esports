@@ -88,13 +88,13 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [userChatMessage, setUserChatMessage] = useState("");
 
   type Platform = 'twitch' | 'youtube' | 'bilibili' | 'huya' | 'douyu' | 'custom';
-  const PLATFORMS: { id: Platform; label: string; color: string; bgColor: string }[] = [
-    { id: 'twitch', label: 'Twitch', color: '#9146FF', bgColor: 'rgba(145,70,255,0.15)' },
-    { id: 'youtube', label: 'YouTube', color: '#FF0033', bgColor: 'rgba(255,0,51,0.15)' },
-    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', bgColor: 'rgba(0,161,214,0.15)' },
-    { id: 'huya', label: '虎牙直播', color: '#FF6B35', bgColor: 'rgba(255,107,53,0.15)' },
-    { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', bgColor: 'rgba(255,140,0,0.15)' },
-    { id: 'custom', label: '自定义', color: '#8B5CF6', bgColor: 'rgba(139,92,246,0.15)' },
+  const PLATFORMS: { id: Platform; label: string; color: string; canEmbed: boolean }[] = [
+    { id: 'twitch', label: 'Twitch', color: '#9146FF', canEmbed: true },
+    { id: 'youtube', label: 'YouTube', color: '#FF0033', canEmbed: true },
+    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false },
+    { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: false },
+    { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false },
+    { id: 'custom', label: '自定义', color: '#8B5CF6', canEmbed: true },
   ];
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
   const [customStreamUrl, setCustomStreamUrl] = useState("");
@@ -112,6 +112,10 @@ export default function LivePage({ onBack }: LivePageProps) {
     return selectedMatch.game;
   }
 
+  function getPlatformInfo(): { id: Platform; label: string; color: string; canEmbed: boolean } | undefined {
+    return PLATFORMS.find(p => p.id === selectedPlatform);
+  }
+
   function getStreamEmbedUrl(): string {
     const key = getGameKey();
     const info = GAME_STREAM_MAP[key];
@@ -120,12 +124,6 @@ export default function LivePage({ onBack }: LivePageProps) {
     switch (selectedPlatform) {
       case 'youtube':
         return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
-      case 'bilibili':
-        return `https://live.bilibili.com/${info.bilibili}`;
-      case 'huya':
-        return `https://www.huya.com/${info.huya}`;
-      case 'douyu':
-        return `https://www.douyu.com/${info.douyu}`;
       case 'custom':
         return customStreamUrl;
       default:
@@ -153,6 +151,16 @@ export default function LivePage({ onBack }: LivePageProps) {
     if (!info) return '';
     const platform = PLATFORMS.find(p => p.id === selectedPlatform);
     return `${info.label} · ${platform?.label || selectedPlatform}`;
+  }
+
+  function handlePlay() {
+    const p = getPlatformInfo();
+    if (!p || p.canEmbed) {
+      setIsPlaying(true);
+      setEmbedError(false);
+    } else {
+      window.open(getStreamPageUrl(), '_blank', 'noopener');
+    }
   }
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -292,7 +300,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                       allowFullScreen
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950 cursor-pointer" onClick={() => setIsPlaying(true)}>
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-950 cursor-pointer" onClick={handlePlay}>
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/30 to-indigo-500/30 border-2 border-cyan-400/60 flex items-center justify-center hover:scale-110 transition-all shadow-lg shadow-cyan-500/20">
                           <Play className="h-10 w-10 text-cyan-400 ml-1" />
@@ -373,7 +381,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                   {PLATFORMS.map(p => (
                     <button
                       key={p.id}
-                      onClick={() => { setSelectedPlatform(p.id); setEmbedError(false); if (p.id !== 'custom') setIsPlaying(false); }}
+                      onClick={() => { setSelectedPlatform(p.id); setEmbedError(false); setIsPlaying(false); }}
                       className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold transition cursor-pointer ${
                         selectedPlatform === p.id
                           ? 'border-slate-100 text-white shadow-lg scale-105'
@@ -385,13 +393,26 @@ export default function LivePage({ onBack }: LivePageProps) {
                       }}
                     >
                       {p.label}
+                      {!p.canEmbed && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950/60 text-slate-400 border border-slate-700">外链</span>
+                      )}
+                      {p.canEmbed && p.id !== 'custom' && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">内嵌</span>
+                      )}
                     </button>
                   ))}
                 </div>
                 {getStreamLabel() && (
-                  <div className="mt-2 text-[11px] text-slate-500">
-                    当前匹配: <span className="text-slate-300">{getStreamLabel()}</span>
-                    · <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">在新页面打开</a>
+                  <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-2 flex-wrap">
+                    <span>当前: <span className="text-slate-300">{getStreamLabel()}</span></span>
+                    <span className="text-slate-700">|</span>
+                    {getPlatformInfo()?.canEmbed ? (
+                      <span className="text-emerald-400">点击播放 = 页面内直接观看</span>
+                    ) : (
+                      <span className="text-amber-400">点击播放 = 新窗口打开原网站</span>
+                    )}
+                    <span className="text-slate-700">|</span>
+                    <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">在新页面打开</a>
                   </div>
                 )}
                 {selectedPlatform === 'custom' && (
