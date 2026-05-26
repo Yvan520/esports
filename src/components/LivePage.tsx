@@ -12,9 +12,10 @@ function formatViewers(n: number): string {
 
 export default function LivePage({ match, onBack }: LivePageProps) {
   const game = GAMES.find(g => g.id === match.game);
+  const teamColor = game?.color || '#00f5ff';
 
   return (
-    <div className="min-h-screen" style={{ background: '#050810', fontFamily: "'Noto Sans SC', 'Rajdhani', sans-serif" }}>
+    <div className="min-h-screen cyber-gradient" style={{ fontFamily: "'Noto Sans SC', 'Rajdhani', sans-serif" }}>
       {/* Nav bar */}
       <nav
         className="fixed top-0 left-0 right-0 z-50"
@@ -26,10 +27,9 @@ export default function LivePage({ match, onBack }: LivePageProps) {
         }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={onBack}>
             <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black cursor-pointer"
-              onClick={onBack}
+              className="w-9 h-9 rounded-lg flex items-center justify-center text-lg font-black"
               style={{
                 background: 'linear-gradient(135deg, #00f5ff, #bf00ff)',
                 boxShadow: '0 0 15px rgba(0,245,255,0.5)',
@@ -52,46 +52,28 @@ export default function LivePage({ match, onBack }: LivePageProps) {
               className="flex items-center gap-2 px-3 py-1.5 rounded-full"
               style={{ background: 'rgba(255,0,110,0.12)', border: '1px solid rgba(255,0,110,0.3)' }}
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 inline-block animate-pulse" />
+              <span className="live-dot w-2 h-2 rounded-full bg-red-500 inline-block"></span>
               <span className="text-xs font-bold text-red-400" style={{ fontFamily: "'Orbitron'" }}>LIVE</span>
             </div>
-            <button
-              onClick={onBack}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
-              style={{
-                background: 'rgba(0,245,255,0.1)',
-                border: '1px solid rgba(0,245,255,0.3)',
-                color: '#00f5ff',
-                fontFamily: "'Orbitron'",
-                letterSpacing: '0.05em',
-              }}
-            >
+            <button onClick={onBack} className="btn-cyber">
               ← 返回
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Scan line overlay */}
-      <div className="fixed inset-0 pointer-events-none z-10"
-        style={{
-          background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px)',
-        }}
-      />
-
-      {/* Ambient particles */}
+      {/* Ambient particles like reference project */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full opacity-20"
+            className="absolute rounded-full opacity-20 float-anim"
             style={{
               width: `${Math.random() * 3 + 1}px`,
               height: `${Math.random() * 3 + 1}px`,
               background: i % 2 === 0 ? '#00f5ff' : '#bf00ff',
               left: `${10 + i * 15}%`,
               top: `${20 + i * 12}%`,
-              animation: `float ${3 + i * 0.5}s ease-in-out infinite`,
               animationDelay: `${i * 0.8}s`,
             }}
           />
@@ -99,18 +81,15 @@ export default function LivePage({ match, onBack }: LivePageProps) {
       </div>
 
       <main className="pt-24 pb-16 px-4 max-w-7xl mx-auto relative z-20">
-        {/* Back link */}
+        {/* Back */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-sm mb-6 transition-colors cursor-pointer"
-          style={{ color: '#6b7280', fontFamily: "'Orbitron'" }}
-          onMouseEnter={e => (e.currentTarget.style.color = '#00f5ff')}
-          onMouseLeave={e => (e.currentTarget.style.color = '#6b7280')}
+          className="btn-cyber mb-6"
         >
           ← 返回主页
         </button>
 
-        {/* Video player area */}
+        {/* Video area */}
         <div
           className="relative rounded-2xl overflow-hidden mb-6"
           style={{
@@ -123,9 +102,7 @@ export default function LivePage({ match, onBack }: LivePageProps) {
           <div
             className="absolute inset-0 flex items-center justify-center"
             style={{
-              background: game
-                ? `radial-gradient(ellipse at center, ${game.color}22, #000 80%)`
-                : '#000',
+              background: `radial-gradient(ellipse at center, ${teamColor}22, #000 80%)`,
             }}
           >
             <div className="text-center">
@@ -135,24 +112,18 @@ export default function LivePage({ match, onBack }: LivePageProps) {
           </div>
 
           {/* Live badge */}
-          <div
-            className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg z-10"
-            style={{ background: 'rgba(255,0,110,0.9)', boxShadow: '0 0 15px rgba(255,0,110,0.5)' }}
-          >
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+          <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-lg z-10" style={{ background: 'rgba(255,0,110,0.9)', boxShadow: '0 0 15px rgba(255,0,110,0.5)' }}>
+            <span className="live-dot w-2 h-2 rounded-full bg-white inline-block"></span>
             <span className="text-white text-xs font-bold" style={{ fontFamily: "'Orbitron'" }}>LIVE</span>
           </div>
 
           {/* Viewers */}
-          <div
-            className="absolute top-4 right-4 px-3 py-1.5 rounded-lg flex items-center gap-1.5 z-10"
-            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
-          >
+          <div className="absolute top-4 right-4 px-3 py-1.5 rounded-lg flex items-center gap-1.5 z-10" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}>
             <span className="text-xs text-gray-400">👁️</span>
             <span className="text-xs text-white font-bold">{match.viewers ? formatViewers(match.viewers) : '-'}</span>
           </div>
 
-          {/* Tournament info overlay */}
+          {/* Tournament info */}
           <div className="absolute bottom-4 left-4 z-10">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">{game?.emoji}</span>
@@ -179,24 +150,14 @@ export default function LivePage({ match, onBack }: LivePageProps) {
           </div>
         </div>
 
-        {/* Match info bar */}
-        <div
-          className="rounded-2xl p-6 mb-6"
-          style={{
-            background: 'rgba(13,17,23,0.85)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(0,245,255,0.12)',
-          }}
-        >
+        {/* Match info bar — using glass-card from reference */}
+        <div className="glass-card p-6 mb-6">
           <div className="flex items-center justify-between">
             {/* Team A */}
             <div className="flex flex-col items-center gap-3 flex-1">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
-                style={{
-                  background: game ? `${game.color}22` : 'rgba(0,245,255,0.15)',
-                  border: game ? `1px solid ${game.color}44` : '1px solid rgba(0,245,255,0.3)',
-                }}
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl team-logo-glow"
+                style={{ background: `${teamColor}22`, border: `1px solid ${teamColor}44` }}
               >
                 {match.teamA.logo}
               </div>
@@ -242,11 +203,8 @@ export default function LivePage({ match, onBack }: LivePageProps) {
             {/* Team B */}
             <div className="flex flex-col items-center gap-3 flex-1">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl"
-                style={{
-                  background: game ? `${game.color}22` : 'rgba(0,245,255,0.15)',
-                  border: game ? `1px solid ${game.color}44` : '1px solid rgba(0,245,255,0.3)',
-                }}
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-3xl team-logo-glow"
+                style={{ background: `${teamColor}22`, border: `1px solid ${teamColor}44` }}
               >
                 {match.teamB.logo}
               </div>
@@ -261,14 +219,7 @@ export default function LivePage({ match, onBack }: LivePageProps) {
         {/* Bottom: timeline + chat */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Timeline */}
-          <div
-            className="lg:col-span-2 rounded-2xl p-5"
-            style={{
-              background: 'rgba(13,17,23,0.85)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(0,245,255,0.12)',
-            }}
-          >
+          <div className="lg:col-span-2 glass-card p-5">
             <h3 className="text-white font-bold text-sm mb-4" style={{ fontFamily: "'Orbitron'" }}>
               ⚡ 比赛动态
             </h3>
@@ -299,14 +250,7 @@ export default function LivePage({ match, onBack }: LivePageProps) {
           </div>
 
           {/* Chat */}
-          <div
-            className="rounded-2xl p-5 flex flex-col"
-            style={{
-              background: 'rgba(13,17,23,0.85)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(0,245,255,0.12)',
-            }}
-          >
+          <div className="glass-card p-5 flex flex-col">
             <h3 className="text-white font-bold text-sm mb-4" style={{ fontFamily: "'Orbitron'" }}>
               💬 互动聊天
             </h3>
@@ -331,13 +275,7 @@ export default function LivePage({ match, onBack }: LivePageProps) {
                 className="flex-1 px-3 py-2 rounded-lg text-xs text-gray-400 outline-none"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
               />
-              <button
-                className="px-4 py-2 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90"
-                style={{
-                  background: 'linear-gradient(135deg, #00f5ff, #bf00ff)',
-                  fontFamily: "'Orbitron'",
-                }}
-              >
+              <button className="btn-cyber text-xs">
                 发送
               </button>
             </div>
