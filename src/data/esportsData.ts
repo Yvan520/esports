@@ -48,6 +48,7 @@ export interface News {
   date: string;
   tag: string;
   image: string;
+  slug?: string;
 }
 
 export function gameBg(game: { bgColor: string }, alpha: string): string {
@@ -533,8 +534,23 @@ export async function fetchLiveMatches(): Promise<Match[]> {
 }
 
 export const NEWS: News[] = [
-  { id: "n1", title: "JDG 击败 BLG，英雄联盟联赛再下一城", summary: "在昨晚进行的英雄联盟顶级联赛中，JDG战队展现出强大的统治力，以碾压之势战胜BLG。比赛中队伍的核心选手发挥出色，多次打出精彩操作，带领团队取得关键胜利。目前该队在积分榜上排名稳步上升。", game: "LOL", date: "10分钟前", tag: "赛事速报", image: "🎮" },
-  { id: "n2", title: "惊天逆转！BLG 在英雄联盟比赛中让二追三", summary: "BLG战队在落后两局的情况下展现出惊人的韧性，连扳三局完成史诗级逆转。决胜局中选手们顶住了巨大压力，通过精妙的战术配合与完美的执行力，最终以3:2的比分击败对手。这场比赛必将成为本赛季最经典的战役之一。", game: "LOL", date: "4小时前", tag: "赛事速报", image: "🎮" },
+  { id: "n1", title: "Knight以12次MVP领跑LPL常规赛，BLG强势登顶", summary: "2026 LPL第二赛段常规赛收官，BLG中单Knight以12次MVP、场均7击杀的统治级表现领跑全联盟，BLG以12胜2负的战绩登顶积分榜。", game: "LOL", date: "2026-05-26", tag: "赛事速报", image: "👑", slug: "lpl-mvp-knight" },
+  { id: "n2", title: "历史首次！三支涅槃组队伍以下克上", summary: "LPL第二赛段骑士之路创造历史——TT、EDG、LGD三支涅槃组战队分别击败登峰组的iG、NIP、WBG，上演史诗级以下克上。", game: "LOL", date: "2026-05-24", tag: "赛事速报", image: "🔥", slug: "lpl-cinderella-story" },
+  { id: "n3", title: "2026 LPL夏季赛6月14日开赛，全新赛制引发期待", summary: "2026 LPL夏季赛定于6月14日正式打响，新赛季将引入多项赛制改革，包括扁平化分组和双败淘汰制的全面推广。", game: "LOL", date: "2026-05-27", tag: "赛事直播", image: "☀️", slug: "lpl-summer-2026" },
+  { id: "n4", title: "AL 2-0横扫JDG，锁定石油杯参赛资格", summary: "在LPL第二赛段关键战中，AL战队以2-0完胜JDG，成功锁定2026电竞世界杯（石油杯）的LPL赛区参赛名额。", game: "LOL", date: "2026-05-22", tag: "赛事速报", image: "🌍", slug: "al-esports-world-cup" },
+  { id: "n5", title: "从RNG到LGD：中单汤圆的重生之路", summary: "前RNG中单选手汤圆在LGD完成职业生涯的华丽转身，骑士之路关键战中发挥出色，帮助LGD淘汰WBG。", game: "LOL", date: "2026-05-23", tag: "行业资讯", image: "🔄", slug: "rng-tangyuan-lgd" },
+  { id: "n6", title: "Spirit 3-0横扫Falcons夺得PGL Astana冠军", summary: "Team Spirit在PGL Astana 2026决赛中以3-0横扫Team Falcons，donk以1.61 rating的恐怖数据获得MVP。", game: "CS2", date: "2026-05-12", tag: "赛事速报", image: "🏆", slug: "cs2-spirit-pgl-astana" },
+  { id: "n7", title: "Legacy 3-1击败Falcons，CAC 2026上海站夺冠", summary: "CS Asia Championships 2026在上海落幕，巴西战队Legacy以3-1击败Falcons夺冠。", game: "CS2", date: "2026-05-20", tag: "赛事速报", image: "🇨🇳", slug: "cs2-legacy-cac-shanghai" },
+  { id: "n8", title: "NAVI 3-0完胜GamerLegion，夺得IEM Atlanta冠军", summary: "NAVI在IEM Atlanta决赛中以3-0横扫GamerLegion，w0nderful以稳定的狙击表现获得MVP。", game: "CS2", date: "2026-04-20", tag: "赛事速报", image: "🇪🇺", slug: "cs2-navi-iem-atlanta" },
+  { id: "n9", title: "Vitality 3-0 NAVI豪取五连冠", summary: "Vitality在BLAST Rivals Spring 2026决赛中以3-0横扫NAVI，实现了跨赛季的五连冠伟业。", game: "CS2", date: "2026-05-18", tag: "赛事速报", image: "🐝", slug: "cs2-vitality-five-peat" },
+  { id: "n10", title: "100 Thieves夺得队史首个CS2线下大赛冠军", summary: "100 Thieves在Parken Challenger Championship中击败各路强敌，夺得俱乐部历史上首个CS2线下赛事冠军。", game: "CS2", date: "2026-05-10", tag: "赛事速报", image: "🇺🇸", slug: "cs2-100t-first-lan-title" },
+  { id: "n11", title: "G2 Esports 3-2险胜Leviatán，加冕VCT Americas冠军", summary: "G2 Esports在VCT Americas Stage 1决赛中以3-2击败Leviatán，夺得2026赛季首个VCT国际联赛冠军。", game: "VALORANT", date: "2026-05-19", tag: "赛事速报", image: "🇺🇸", slug: "valorant-g2-americas-champion" },
+  { id: "n12", title: "败者组奇迹！Team Heretics夺得VCT EMEA冠军", summary: "Team Heretics从败者组一路杀出，在VCT EMEA Stage 1决赛中击败对手，完成了不可思议的败者组夺冠之旅。", game: "VALORANT", date: "2026-05-18", tag: "赛事速报", image: "🇪🇸", slug: "valorant-heretics-emea-champion" },
+  { id: "n13", title: "Paper Rex 3-0横扫FULL SENSE，称霸VCT Pacific", summary: "Paper Rex在VCT Pacific Stage 1决赛中以3-0横扫FULL SENSE，以统治级表现夺得太平洋赛区冠军。", game: "VALORANT", date: "2026-05-17", tag: "赛事速报", image: "🇸🇬", slug: "valorant-prx-pacific-champion" },
+  { id: "n14", title: "VCT Masters London 2026即将开战", summary: "VCT Masters London 2026定于6月6日至6月21日在伦敦举行，来自全球三大赛区的顶级战队将齐聚伦敦。", game: "VALORANT", date: "2026-05-27", tag: "赛事直播", image: "🇬🇧", slug: "valorant-masters-london-preview" },
+  { id: "n15", title: "Wildcard击败FOKUS，夺得BC Game Masters冠军", summary: "北美战队Wildcard在BC Game Masters决赛中击败FOKUS，赢得队史首个线下大赛冠军。", game: "CS2", date: "2026-05-15", tag: "赛事速报", image: "🎮", slug: "cs2-wildcard-bcgame" },
+  { id: "n16", title: "JDG 击败 BLG，英雄联盟联赛再下一城", summary: "在昨晚进行的英雄联盟顶级联赛中，JDG战队展现出强大的统治力，以碾压之势战胜BLG。比赛中队伍的核心选手发挥出色，多次打出精彩操作，带领团队取得关键胜利。目前该队在积分榜上排名稳步上升。", game: "LOL", date: "10分钟前", tag: "赛事速报", image: "🎮" },
+  { id: "n17", title: "惊天逆转！BLG 在英雄联盟比赛中让二追三", summary: "BLG战队在落后两局的情况下展现出惊人的韧性，连扳三局完成史诗级逆转。决胜局中选手们顶住了巨大压力，通过精妙的战术配合与完美的执行力，最终以3:2的比分击败对手。这场比赛必将成为本赛季最经典的战役之一。", game: "LOL", date: "4小时前", tag: "赛事速报", image: "🎮" },
   { id: "n3", title: "EDG 横扫 WBG 强势晋级英雄联盟季后赛", summary: "EDG在季后赛资格关键战中直落三局击败WBG，凭借这场胜利锁定季后赛席位。队伍的战术体系日趋成熟，选手之间的配合愈发默契，展现出冠军相。教练组赛后表示团队状态正在最佳时期。", game: "LOL", date: "6小时前", tag: "赛事速报", image: "🎮" },
   { id: "n4", title: "英雄联盟全明星赛阵容公布，TES多人入选", summary: "备受瞩目的英雄联盟全明星赛正式公布参赛阵容，TES战队成为最大赢家，多名选手入选首发名单。全明星赛将于本月下旬举行，届时将有solo赛、娱乐赛以及正赛等丰富内容。票务信息已开启预售。", game: "LOL", date: "13小时前", tag: "行业资讯", image: "🎮" },
   { id: "n5", title: "英雄联盟2027赛季赛程正式公布，揭幕战由WBG对阵LNG", summary: "官方正式公布了英雄联盟2027赛季的完整赛程安排，新赛季将于近期拉开帷幕。揭幕战将由WBG对阵LNG，两支队伍在休赛期都进行了阵容补强，这场对决看点十足。常规赛将继续沿用主客场制。", game: "LOL", date: "17小时前", tag: "行业资讯", image: "🎮" },

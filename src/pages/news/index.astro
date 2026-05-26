@@ -1,16 +1,99 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+interface Frontmatter {
+  title: string;
+  description: string;
+  date: string;
+  game: string;
+  tag: string;
+  image: string;
+}
+
+const articles = import.meta.glob<{ frontmatter: Frontmatter }>("../../content/news/*.md", { eager: true });
+
+const allNews = Object.entries(articles)
+  .map(([path, mod]) => ({
+    slug: path.split("/").pop()!.replace(".md", ""),
+    ...mod.frontmatter,
+  }))
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 ---
 
-<BaseLayout title="电竞资讯 - 即将上线">
+<BaseLayout title="电竞资讯">
   <main class="min-h-screen" style="background:#080814;font-family:'Noto Sans SC',sans-serif">
-    <div class="max-w-4xl mx-auto px-4 py-16 text-center">
+    <div class="max-w-5xl mx-auto px-4 py-12">
       <a href="/" class="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 mb-8 text-sm">&larr; 返回首页</a>
-      <div class="text-6xl mb-6 mt-20">📰</div>
-      <h1 class="text-4xl font-black text-white mb-4" style="font-family:Rajdhani,sans-serif">
-        电竞<span style="color:#a5b4fc">资讯</span>
-      </h1>
-      <p class="text-gray-500 text-lg">即将上线，敬请期待</p>
+
+      <div class="text-center mb-12">
+        <div class="text-6xl mb-4">📰</div>
+        <h1 class="text-4xl font-black text-white mb-2" style="font-family:Rajdhani,sans-serif">
+          电竞<span style="color:#a5b4fc">资讯</span>
+        </h1>
+        <p class="text-gray-500">实时赛事动态 · 深度分析报道</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {allNews.map((article) => {
+          const tc = { color: '#6366f1', bg: 'rgba(99,102,241,0.12)' } as { color: string; bg: string };
+          if (article.tag === '赛事速报') { tc.color = '#ef4444'; tc.bg = 'rgba(239,68,68,0.12)'; }
+          else if (article.tag === '赛前预测') { tc.color = '#f59e0b'; tc.bg = 'rgba(245,158,11,0.12)'; }
+          else if (article.tag === '行业资讯') { tc.color = '#06b6d4'; tc.bg = 'rgba(6,182,212,0.12)'; }
+          else if (article.tag === '赛事直播') { tc.color = '#22c55e'; tc.bg = 'rgba(34,197,94,0.12)'; }
+          const gc = { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', emoji: '🎮' } as { color: string; bg: string; emoji: string };
+          if (article.game === 'LOL') { gc.color = '#C89B3C'; gc.bg = 'rgba(200,155,60,0.15)'; gc.emoji = '⚔️'; }
+          else if (article.game === 'CS2') { gc.color = '#FF6B35'; gc.bg = 'rgba(255,107,53,0.15)'; gc.emoji = '🎯'; }
+          else if (article.game === 'VALORANT') { gc.color = '#FF4655'; gc.bg = 'rgba(255,70,85,0.15)'; gc.emoji = '🔫'; }
+          else if (article.game === 'DOTA2') { gc.color = '#CC3333'; gc.bg = 'rgba(204,51,51,0.15)'; gc.emoji = '🗡️'; }
+          else if (article.game === 'PUBG') { gc.color = '#F2A900'; gc.bg = 'rgba(242,169,0,0.15)'; gc.emoji = '🪖'; }
+          else if (article.game === 'HONOR') { gc.color = '#00D4FF'; gc.bg = 'rgba(0,212,255,0.15)'; gc.emoji = '👑'; }
+
+          return (
+            <a
+              key={article.slug}
+              href={`/news/${article.slug}/`}
+              class="rounded-2xl overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1 cursor-pointer"
+              style="background:rgba(15,15,35,0.8);border:1px solid rgba(255,255,255,0.06);display:block"
+            >
+              <div
+                class="h-40 flex items-center justify-center relative overflow-hidden text-5xl group-hover:scale-110 transition-transform duration-500"
+                style="background:linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))"
+              >
+                <div class="absolute inset-0 opacity-20" style="background-image:linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);background-size:30px 30px" />
+                {article.image}
+                <div class="absolute inset-0" style="background:linear-gradient(180deg, transparent 50%, rgba(15,15,35,0.95) 100%)" />
+              </div>
+              <div class="p-5">
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-xs font-bold px-2 py-1 rounded-full" style={{ color: tc.color, background: tc.bg }}>
+                    {article.tag}
+                  </span>
+                  <span class="text-xs font-semibold px-2 py-1 rounded-full" style={{ color: gc.color, background: gc.bg }}>
+                    {gc.emoji} {article.game}
+                  </span>
+                </div>
+                <h2 class="text-white font-bold text-base leading-snug mb-2 line-clamp-2 group-hover:text-indigo-300 transition-colors">
+                  {article.title}
+                </h2>
+                <p class="text-gray-400 text-sm leading-relaxed mb-3 line-clamp-2">
+                  {article.description}
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-gray-600 text-xs">{article.date}</span>
+                  <span class="text-indigo-400 text-xs group-hover:text-indigo-300 transition-colors">阅读全文 →</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+
+      {allNews.length === 0 && (
+        <div class="text-center py-20">
+          <div class="text-6xl mb-4">📰</div>
+          <p class="text-gray-500 text-lg">暂无资讯</p>
+        </div>
+      )}
     </div>
   </main>
 </BaseLayout>

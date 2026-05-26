@@ -35,9 +35,9 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Featured - first item large */}
           {filtered[0] && (
-            <a
-              href="/news/"
-              className="md:row-span-2 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.01] hover:-translate-y-1"
+              <a
+                href={filtered[0].slug ? `/news/${filtered[0].slug}/` : '/news/'}
+                className="md:row-span-2 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.01] hover:-translate-y-1"
               style={{ background: 'rgba(15,15,35,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
               {/* Image placeholder */}
@@ -72,7 +72,7 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 text-xs">{filtered[0].date}</span>
-                  <span className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors cursor-pointer">阅读全文 →</span>
+                  <a href={filtered[0].slug ? `/news/${filtered[0].slug}/` : '/news/'} className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors cursor-pointer">阅读全文 →</a>
                 </div>
               </div>
             </a>
@@ -85,7 +85,7 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
             return (
               <a
                 key={news.id}
-                href="/news/"
+                href={news.slug ? `/news/${news.slug}/` : '/news/'}
                 className="flex gap-4 p-4 rounded-2xl cursor-pointer group transition-all duration-300 hover:scale-[1.01]"
                 style={{ background: 'rgba(15,15,35,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
               >

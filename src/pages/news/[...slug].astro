@@ -1,17 +1,59 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-export async function getStaticPaths() {
-  return [];
+interface Frontmatter {
+  title: string;
+  description: string;
+  date: string;
+  game: string;
+  tag: string;
+  image: string;
 }
+
+export async function getStaticPaths() {
+  const newsModules = import.meta.glob("../../content/news/*.md", { eager: true });
+  return Object.entries(newsModules).map(([path]) => {
+    const slug = path.split("/").pop()!.replace(".md", "");
+    return { params: { slug } };
+  });
+}
+
+const articles = import.meta.glob("../../content/news/*.md", { eager: true });
+const { slug } = Astro.params;
+const entry = Object.entries(articles).find(
+  ([path]) => path.split("/").pop()!.replace(".md", "") === slug,
+);
+if (!entry) throw new Error(`News article not found: ${slug}`);
+const [, mod] = entry;
+const { frontmatter, Content } = mod;
 ---
 
-<BaseLayout title="电竞资讯">
-  <main class="min-h-screen flex items-center justify-center" style="background:#080814;font-family:'Noto Sans SC',sans-serif">
-    <div class="text-center">
-      <div class="text-6xl mb-4">📰</div>
-      <p class="text-gray-500">文章不存在</p>
-      <a href="/news/" class="inline-block mt-4 text-indigo-400 hover:text-indigo-300">&larr; 返回资讯列表</a>
-    </div>
+<BaseLayout title={frontmatter.title} description={frontmatter.description}>
+  <main style="background:#080814;font-family:'Noto Sans SC',sans-serif;min-height:100vh">
+    <article class="max-w-3xl mx-auto px-4 py-12">
+      <a href="/news/" class="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 mb-8 text-sm">&larr; 返回资讯列表</a>
+
+      <div class="flex items-center gap-3 mb-6">
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full" style="color:#ef4444;background:rgba(239,68,68,0.12)">
+          {frontmatter.tag}
+        </span>
+        <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="color:#a5b4fc;background:rgba(99,102,241,0.12)">
+          {frontmatter.game}
+        </span>
+        <span class="text-gray-600 text-xs ml-auto">{frontmatter.date}</span>
+      </div>
+
+      <div class="text-6xl mb-4">{frontmatter.image}</div>
+      <h1 class="text-3xl md:text-4xl font-black text-white leading-tight mb-4" style="font-family:Rajdhani,sans-serif">
+        {frontmatter.title}
+      </h1>
+      <p class="text-gray-400 text-lg leading-relaxed mb-10 border-l-4 border-indigo-500/40 pl-4 italic">
+        {frontmatter.description}
+      </p>
+
+      <div class="prose prose-invert prose-indigo max-w-none prose-headings:text-white prose-headings:font-bold prose-headings:mt-8 prose-headings:mb-4 prose-p:text-gray-300 prose-p:leading-relaxed prose-p:mb-4 prose-strong:text-white prose-li:text-gray-300">
+        <Content />
+      </div>
+    </article>
   </main>
 </BaseLayout>
