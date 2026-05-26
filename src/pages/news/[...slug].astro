@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../content/news/*.md", { eager: true });
+  return Object.entries(modules).map(([path, mod]) => {
+    const slug = path.split("/").pop().replace(".md", "");
+    return { params: { slug }, props: { mod, slug } };
+  });
+}
+
+const { mod } = Astro.props;
+const { frontmatter, Content } = mod;
+const { title, description, date, game, tag, image } = frontmatter;
+
+const tagColors: Record<string, string> = {
+  "赛事前瞻": "#22c55e",
+  "版本分析": "#06b4d",
+  "行业观察": "#f59e0b",
+  "战队专题": "#a78bfa",
+  "赛事速报": "#ef4444",
+  "转会新闻": "#f97316",
+  "攻略指南": "#6366f1",
+};
+const tc = tagColors[tag] || "#6366f1";
+const gameEmoji: Record<string, string> = {
+  LOL: "⚔️", VALORANT: "🔫", CS2: "🎯", DOTA2: "🗡️", PUBG: "🪖", HONOR: "👑",
+};
+const gameName: Record<string, string> = {
+  LOL: "英雄联盟", VALORANT: "VALORANT", CS2: "CS2", DOTA2: "DOTA2", PUBG: "PUBG", HONOR: "王者荣耀",
+};
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="min-h-screen" style="background:#080814;font-family:'Noto Sans SC',sans-serif">
+    <article class="max-w-3xl mx-auto px-4 py-16">
+      <a href="/news/" class="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 mb-8 text-sm">&larr; 返回资讯列表</a>
+
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <span class="text-xs font-bold px-3 py-1 rounded-full" style={`color:${tc};background:${tc}1e`}>{tag}</span>
+        <span class="text-xs font-semibold px-3 py-1 rounded-full" style="color:#a5b4fc;background:rgba(99,102,241,0.12)">
+          {gameEmoji[game] || ""} {gameName[game] || game}
+        </span>
+        <span class="text-xs text-gray-600">{date}</span>
+      </div>
+
+      <h1 class="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">{title}</h1>
+
+      <div class="h-px mb-8" style="background:linear-gradient(90deg,transparent,rgba(99,102,241,0.3),transparent)" />
+
+      <div class="prose prose-invert prose-lg max-w-none">
+        <Content />
+      </div>
+
+      <div class="h-px my-10" style="background:linear-gradient(90deg,transparent,rgba(99,102,241,0.3),transparent)" />
+
+      <div class="text-center">
+        <a href="/news/" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-bold transition-all hover:scale-105" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+          &larr; 查看更多资讯
+        </a>
+      </div>
+    </article>
+  </main>
+</BaseLayout>

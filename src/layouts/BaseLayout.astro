@@ -1,0 +1,52 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+const fullTitle = title.includes("GameWayz") ? title : `${title} | GameWayz 电竞赛事中心`;
+const desc = description || "GameWayz 电竞赛事中心 - 聚合 LOL、VALORANT、CS2、DOTA2、PUBG、王者荣耀等顶级赛事直播与实时比分。";
+const image = ogImage || "https://www.gamewayz.com/hero-bg.jpg";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <meta name="keywords" content="电竞赛事,LOL,英雄联盟,VALORANT,瓦罗兰特,CS2,DOTA2,PUBG,王者荣耀,电竞直播,实时比分,赛程,战队积分" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href={"https://www.gamewayz.com" + Astro.url.pathname} />
+
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={"https://www.gamewayz.com" + Astro.url.pathname} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content={image} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={desc} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "GameWayz 电竞赛事中心",
+      "url": "https://www.gamewayz.com/",
+      "description": "全球电竞赛事一站式观赛平台",
+      "inLanguage": "zh-CN",
+    })} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

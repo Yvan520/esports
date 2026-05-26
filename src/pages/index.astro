@@ -1,0 +1,11 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import App from "../App";
+
+// Import global CSS (Tailwind + custom styles)
+import "../index.css";
+---
+
+<BaseLayout title="首页 - 全球电竞赛事直播">
+  <App client:only="react" />
+</BaseLayout>
