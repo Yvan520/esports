@@ -21,15 +21,15 @@ export default function StreamPlayer({ platform, roomId, embedUrl, streamUrl: pr
   const hlsPlayerRef = useRef<any>(null);
 
   // 根据平台决定使用 iframe 还是 direct video
-  const isIframePlatform = platform === 'twitch' || platform === 'youtube' || platform === 'bilibili' || platform === 'huya' || (platform === 'custom' && embedUrl?.includes('embed'));
+  // twitch/youtube/custom(embed) 用 iframe；douyu/bilibili/huya 走 proxy + flv.js
+  const isIframePlatform = platform === 'twitch' || platform === 'youtube' || (platform === 'custom' && embedUrl?.includes('embed'));
   const useIframe = isIframePlatform && !useDirectVideo;
 
-  // 通过 proxy 获取流地址 (仅斗鱼需要)
+  // 通过 proxy 获取流地址 (斗鱼/B站/虎牙均走 proxy)
   useEffect(() => {
     if (platform === 'custom' && propStreamUrl) {
       const isIframeUrl = propStreamUrl.includes('embed') || propStreamUrl.includes('player.') || propStreamUrl.includes('youtube.com');
       if (isIframeUrl) {
-        // 如果是 iframe URL，不使用 direct video
         return;
       }
       setDirectUrl(propStreamUrl);
@@ -37,9 +37,10 @@ export default function StreamPlayer({ platform, roomId, embedUrl, streamUrl: pr
       return;
     }
 
-    if (platform === 'douyu' && proxyUrl && roomId) {
+    // 斗鱼 / B站 / 虎牙 走 proxy 获取真实流地址
+    if ((platform === 'douyu' || platform === 'bilibili' || platform === 'huya') && proxyUrl && roomId) {
       setStatus('loading');
-      fetch(`${proxyUrl}/api/stream?platform=douyu&roomId=${roomId}`)
+      fetch(`${proxyUrl}/api/stream?platform=${platform}&roomId=${roomId}`)
         .then(r => r.json())
         .then(data => {
           if (data.url) {
@@ -65,7 +66,7 @@ export default function StreamPlayer({ platform, roomId, embedUrl, streamUrl: pr
     setStatus('loading');
 
     const video = videoRef.current;
-    const isFlv = directUrl.includes('.flv') || platform === 'douyu';
+    const isFlv = directUrl.includes('.flv') || platform === 'douyu' || platform === 'bilibili' || platform === 'huya';
     const isHls = directUrl.includes('.m3u8');
 
     if (isFlv && typeof window !== 'undefined') {

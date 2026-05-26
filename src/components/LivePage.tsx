@@ -90,12 +90,12 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [userChatMessage, setUserChatMessage] = useState("");
 
   type Platform = 'twitch' | 'youtube' | 'bilibili' | 'huya' | 'douyu' | 'custom';
-  const PLATFORMS: { id: Platform; label: string; color: string; canEmbed: boolean }[] = [
+  const PLATFORMS: { id: Platform; label: string; color: string; canEmbed: boolean; viaProxy?: boolean }[] = [
     { id: 'twitch', label: 'Twitch', color: '#9146FF', canEmbed: true },
     { id: 'youtube', label: 'YouTube', color: '#FF0033', canEmbed: true },
-    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: true },
-    { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: true },
-    { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false },
+    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false, viaProxy: true },
+    { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: false, viaProxy: true },
+    { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false, viaProxy: true },
     { id: 'custom', label: '自定义', color: '#8B5CF6', canEmbed: true },
   ];
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
@@ -103,20 +103,20 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [proxyUrl, setProxyUrl] = useState("https://healthy-mustang-32.yvan520.deno.net");
   const [showProxySettings, setShowProxySettings] = useState(false);
 
-  const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; huya: string; douyu: string; label: string }> = {
-    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', huya: '660001', douyu: '288016', label: '英雄联盟 LPL' },
-    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '234', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
-    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '38', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
-    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '3', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
-    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '25', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
-    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '89', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
+  const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; bilibiliRealId: string; huya: string; douyu: string; label: string }> = {
+    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: '7734200', huya: '660001', douyu: '288016', label: '英雄联盟 LPL' },
+    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '234', bilibiliRealId: '22683224', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
+    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '38', bilibiliRealId: '33230', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
+    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '3', bilibiliRealId: '3', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
+    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '25', bilibiliRealId: '25', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
+    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '89', bilibiliRealId: '89', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
   };
 
   function getGameKey(): string {
     return selectedMatch.game;
   }
 
-  function getPlatformInfo(): { id: Platform; label: string; color: string; canEmbed: boolean } | undefined {
+  function getPlatformInfo(): { id: Platform; label: string; color: string; canEmbed: boolean; viaProxy?: boolean } | undefined {
     return PLATFORMS.find(p => p.id === selectedPlatform);
   }
 
@@ -128,10 +128,6 @@ export default function LivePage({ onBack }: LivePageProps) {
     switch (selectedPlatform) {
       case 'youtube':
         return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
-      case 'huya':
-        return `https://liveshare.huya.com/iframe/${info.huya}`;
-      case 'bilibili':
-        return `https://www.bilibili.com/blackboard/live/live-activity-player.html?cid=${info.bilibili}&quality=4&danmaku=0&fullscreen=1`;
       case 'custom':
         return customStreamUrl;
       default:
@@ -145,7 +141,7 @@ export default function LivePage({ onBack }: LivePageProps) {
     if (!info) return 'https://www.twitch.tv';
     switch (selectedPlatform) {
       case 'youtube': return `https://www.youtube.com/channel/${info.youtube}/live`;
-      case 'bilibili': return `https://live.bilibili.com/${info.bilibili}`;
+      case 'bilibili': return `https://live.bilibili.com/${info.bilibiliRealId}`;
       case 'huya': return `https://www.huya.com/${info.huya}`;
       case 'douyu': return `https://www.douyu.com/${info.douyu}`;
       case 'custom': return customStreamUrl || 'https://www.twitch.tv';
@@ -158,12 +154,17 @@ export default function LivePage({ onBack }: LivePageProps) {
     const info = GAME_STREAM_MAP[key];
     if (!info) return '';
     const platform = PLATFORMS.find(p => p.id === selectedPlatform);
-    return `${info.label} · ${platform?.label || selectedPlatform}`;
+    const proxyNote = platform?.viaProxy ? ' · 直链直播' : '';
+    return `${info.label} · ${platform?.label || selectedPlatform}${proxyNote}`;
   }
 
   function handlePlay() {
     const p = getPlatformInfo();
-    if (!p || p.canEmbed || (p.id === 'douyu' && proxyUrl)) {
+    if (!p) return;
+    if (p.canEmbed) {
+      setIsPlaying(true);
+      setEmbedError(false);
+    } else if (p.viaProxy && proxyUrl) {
       setIsPlaying(true);
       setEmbedError(false);
     } else {
@@ -303,7 +304,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                     <StreamPlayer
                       key={`${selectedPlatform}-${getStreamEmbedUrl()}`}
                       platform={selectedPlatform}
-                      roomId={selectedPlatform !== 'custom' ? GAME_STREAM_MAP[getGameKey()]?.[selectedPlatform] : undefined}
+                      roomId={selectedPlatform !== 'custom' ? GAME_STREAM_MAP[getGameKey()]?.[selectedPlatform === 'bilibili' ? 'bilibiliRealId' : selectedPlatform] : undefined}
                       embedUrl={getStreamEmbedUrl()}
                       streamUrl={selectedPlatform === 'custom' ? customStreamUrl : undefined}
                       proxyUrl={proxyUrl || undefined}
@@ -404,13 +405,13 @@ export default function LivePage({ onBack }: LivePageProps) {
                       }}
                     >
                       {p.label}
-                      {!p.canEmbed && (
+                      {!p.canEmbed && !p.viaProxy && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-950/60 text-slate-400 border border-slate-700">外链</span>
                       )}
-                      {p.canEmbed && (p.id === 'bilibili' || p.id === 'huya') && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-950/60 text-violet-400 border border-violet-800">原生视频</span>
+                      {p.viaProxy && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-violet-950/60 text-violet-400 border border-violet-800">直链直播</span>
                       )}
-                      {p.canEmbed && p.id !== 'custom' && p.id !== 'bilibili' && p.id !== 'huya' && (
+                      {p.canEmbed && p.id !== 'custom' && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-400 border border-emerald-800">内嵌</span>
                       )}
                     </button>
@@ -422,6 +423,8 @@ export default function LivePage({ onBack }: LivePageProps) {
                     <span className="text-slate-700">|</span>
                     {getPlatformInfo()?.canEmbed ? (
                       <span className="text-emerald-400">点击播放 = 页面内直接观看</span>
+                    ) : getPlatformInfo()?.viaProxy ? (
+                      <span className="text-violet-400">点击播放 = 通过直播流直链播放（需要 proxy）</span>
                     ) : (
                       <span className="text-amber-400">点击播放 = 新窗口打开原网站</span>
                     )}
