@@ -85,17 +85,27 @@ export default function LivePage({ onBack }: LivePageProps) {
   
   const [isPlaying, setIsPlaying] = useState(false);
   const [embedError, setEmbedError] = useState(false);
-  const [streamPlatform, setStreamPlatform] = useState<'twitch' | 'youtube' | 'custom'>('twitch');
-  const [customStreamUrl, setCustomStreamUrl] = useState("");
   const [userChatMessage, setUserChatMessage] = useState("");
 
-  const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; label: string }> = {
-    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', label: '英雄联盟 LPL' },
-    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', label: 'VALORANT VCT' },
-    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', label: 'CS2 ESL' },
-    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', label: 'DOTA 2 TI' },
-    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', label: 'PUBG Esports' },
-    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', label: '王者荣耀 KPL' },
+  type Platform = 'twitch' | 'youtube' | 'bilibili' | 'huya' | 'douyu' | 'custom';
+  const PLATFORMS: { id: Platform; label: string; color: string; bgColor: string }[] = [
+    { id: 'twitch', label: 'Twitch', color: '#9146FF', bgColor: 'rgba(145,70,255,0.15)' },
+    { id: 'youtube', label: 'YouTube', color: '#FF0033', bgColor: 'rgba(255,0,51,0.15)' },
+    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', bgColor: 'rgba(0,161,214,0.15)' },
+    { id: 'huya', label: '虎牙直播', color: '#FF6B35', bgColor: 'rgba(255,107,53,0.15)' },
+    { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', bgColor: 'rgba(255,140,0,0.15)' },
+    { id: 'custom', label: '自定义', color: '#8B5CF6', bgColor: 'rgba(139,92,246,0.15)' },
+  ];
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
+  const [customStreamUrl, setCustomStreamUrl] = useState("");
+
+  const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; huya: string; douyu: string; label: string }> = {
+    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', huya: '660001', douyu: '288016', label: '英雄联盟 LPL' },
+    VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '234', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
+    CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '38', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
+    DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '3', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
+    PUBG: { twitch: 'pubg', youtube: 'UCnXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '25', huya: '410001', douyu: '886601', label: 'PUBG Esports' },
+    HONOR: { twitch: 'hoK', youtube: 'UCmXU0J1f5Y5J5T5n5z5z5zQ', bilibili: '89', huya: '330001', douyu: '716601', label: '王者荣耀 KPL' },
   };
 
   function getGameKey(): string {
@@ -106,30 +116,43 @@ export default function LivePage({ onBack }: LivePageProps) {
     const key = getGameKey();
     const info = GAME_STREAM_MAP[key];
     if (!info) return '';
-    if (streamPlatform === 'custom' && customStreamUrl) return customStreamUrl;
-    if (streamPlatform === 'youtube') {
-      return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
-    }
     const domain = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return `https://player.twitch.tv/?channel=${info.twitch}&parent=${domain}&parent=www.gamewayz.com&parent=gamewayz.com&muted=true`;
+    switch (selectedPlatform) {
+      case 'youtube':
+        return `https://www.youtube.com/embed/live_stream?channel=${info.youtube}&autoplay=1&mute=1`;
+      case 'bilibili':
+        return `https://live.bilibili.com/${info.bilibili}`;
+      case 'huya':
+        return `https://www.huya.com/${info.huya}`;
+      case 'douyu':
+        return `https://www.douyu.com/${info.douyu}`;
+      case 'custom':
+        return customStreamUrl;
+      default:
+        return `https://player.twitch.tv/?channel=${info.twitch}&parent=${domain}&parent=www.gamewayz.com&parent=gamewayz.com&muted=true`;
+    }
   }
 
   function getStreamPageUrl(): string {
     const key = getGameKey();
     const info = GAME_STREAM_MAP[key];
     if (!info) return 'https://www.twitch.tv';
-    if (streamPlatform === 'youtube') return `https://www.youtube.com/channel/${info.youtube}/live`;
-    if (streamPlatform === 'custom' && customStreamUrl) return customStreamUrl;
-    return `https://www.twitch.tv/${info.twitch}`;
+    switch (selectedPlatform) {
+      case 'youtube': return `https://www.youtube.com/channel/${info.youtube}/live`;
+      case 'bilibili': return `https://live.bilibili.com/${info.bilibili}`;
+      case 'huya': return `https://www.huya.com/${info.huya}`;
+      case 'douyu': return `https://www.douyu.com/${info.douyu}`;
+      case 'custom': return customStreamUrl || 'https://www.twitch.tv';
+      default: return `https://www.twitch.tv/${info.twitch}`;
+    }
   }
 
   function getStreamLabel(): string {
     const key = getGameKey();
     const info = GAME_STREAM_MAP[key];
     if (!info) return '';
-    if (streamPlatform === 'youtube') return `${info.label} · YouTube`;
-    if (streamPlatform === 'custom') return '自定义源';
-    return `${info.label} · Twitch`;
+    const platform = PLATFORMS.find(p => p.id === selectedPlatform);
+    return `${info.label} · ${platform?.label || selectedPlatform}`;
   }
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -371,34 +394,61 @@ export default function LivePage({ onBack }: LivePageProps) {
                       {isPlaying && <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
                       <span className="text-[10px] font-mono">{getStreamLabel() || '第三方平台'}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 bg-slate-900 rounded-lg border border-slate-800 p-0.5">
-                        <button onClick={() => { setStreamPlatform('twitch'); setEmbedError(false); }} className={`text-[10px] px-2 py-0.5 rounded transition cursor-pointer ${streamPlatform === 'twitch' ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-500 hover:text-slate-300'}`}>Twitch</button>
-                        <button onClick={() => { setStreamPlatform('youtube'); setEmbedError(false); }} className={`text-[10px] px-2 py-0.5 rounded transition cursor-pointer ${streamPlatform === 'youtube' ? 'bg-red-500/20 text-red-300' : 'text-slate-500 hover:text-slate-300'}`}>YouTube</button>
-                        <button onClick={() => setStreamPlatform('custom')} className={`text-[10px] px-2 py-0.5 rounded transition cursor-pointer ${streamPlatform === 'custom' ? 'bg-purple-500/20 text-purple-300' : 'text-slate-500 hover:text-slate-300'}`}>自定义</button>
-                      </div>
-                    </div>
+                    <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="text-[10px] bg-slate-900 hover:bg-slate-800 border border-slate-800 px-2 py-1 rounded transition text-slate-400 hover:text-slate-200">
+                      新页面打开 ↗
+                    </a>
                   </div>
-
-                  {/* Custom URL input */}
-                  {streamPlatform === 'custom' && (
-                    <div className="absolute bottom-12 inset-x-0 z-10 px-4 py-2 bg-slate-950/90 backdrop-blur-sm border-t border-slate-800/50 flex gap-2">
-                      <input
-                        type="text"
-                        value={customStreamUrl}
-                        onChange={(e) => setCustomStreamUrl(e.target.value)}
-                        placeholder="粘贴直播嵌入地址 (支持任意平台的 iframe 链接)"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"
-                      />
-                      <button
-                        onClick={() => { if (customStreamUrl) { setIsPlaying(true); setEmbedError(false); } }}
-                        className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 text-xs font-bold rounded-lg transition cursor-pointer"
-                      >
-                        应用
-                      </button>
-                    </div>
-                  )}
                 </div>
+              </div>
+
+              {/* Prominent Platform Selector */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <Tv className="h-4 w-4 text-cyan-400" />
+                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">选择直播源平台</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {PLATFORMS.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => { setSelectedPlatform(p.id); setEmbedError(false); if (p.id !== 'custom') setIsPlaying(false); }}
+                      className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-bold transition cursor-pointer ${
+                        selectedPlatform === p.id
+                          ? 'border-slate-100 text-white shadow-lg scale-105'
+                          : 'border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200'
+                      }`}
+                      style={{
+                        background: selectedPlatform === p.id ? p.color : 'transparent',
+                        boxShadow: selectedPlatform === p.id ? `0 0 20px ${p.color}40` : 'none',
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                {getStreamLabel() && (
+                  <div className="mt-2 text-[11px] text-slate-500">
+                    当前匹配: <span className="text-slate-300">{getStreamLabel()}</span>
+                    · <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:text-cyan-300 underline">在新页面打开</a>
+                  </div>
+                )}
+                {selectedPlatform === 'custom' && (
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      value={customStreamUrl}
+                      onChange={(e) => setCustomStreamUrl(e.target.value)}
+                      placeholder="粘贴任意直播平台的嵌入链接 (iframe src)"
+                      className="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-500"
+                    />
+                    <button
+                      onClick={() => { if (customStreamUrl) { setIsPlaying(true); setEmbedError(false); } }}
+                      className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 text-xs font-bold rounded-lg transition cursor-pointer shrink-0"
+                    >
+                      应用并播放
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Match Selector */}
