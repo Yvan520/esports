@@ -15,6 +15,7 @@ export default function MatchCard({ match }: MatchCardProps) {
   const isFinished = match.status === 'finished';
 
   function scrollToLive() {
+    window.location.hash = `live-${match.id}`;
     const el = document.getElementById('live');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   }
