@@ -84,25 +84,35 @@ export default function LivePage({ onBack }: LivePageProps) {
   ]);
   
   const [isPlaying, setIsPlaying] = useState(false);
-  const [streamError, setStreamError] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
   const [userChatMessage, setUserChatMessage] = useState("");
 
-  const PREDEFINED_CHANNELS = [
-    { label: "LPL (英雄联盟职业联赛)", url: "https://player.twitch.tv/?channel=lpl&parent=" },
-    { label: "LCK (英雄联盟韩国赛区)", url: "https://player.twitch.tv/?channel=lck&parent=" },
-    { label: "Riot Games (官方频道)", url: "https://player.twitch.tv/?channel=riotgames&parent=" },
-    { label: "VALORANT Esports", url: "https://player.twitch.tv/?channel=valorant_esports&parent=" },
-    { label: "CS:GO ESL", url: "https://player.twitch.tv/?channel=esl_csgo&parent=" },
-    { label: "Dota 2 TI", url: "https://player.twitch.tv/?channel=dota2ti&parent=" },
-  ];
-  const [selectedChannelIdx, setSelectedChannelIdx] = useState(0);
-  const [customStreamUrl, setCustomStreamUrl] = useState("");
-  const [showUrlInput, setShowUrlInput] = useState(false);
+  const GAME_STREAM_MAP: Record<string, { twitch: string; label: string; url?: string }> = {
+    LOL: { twitch: 'lpl', label: 'LPL 英雄联盟职业联赛' },
+    VALORANT: { twitch: 'valorant_esports', label: 'VALORANT Champions Tour' },
+    CS2: { twitch: 'esl_csgo', label: 'ESL Counter-Strike' },
+    DOTA2: { twitch: 'dota2ti', label: 'DOTA 2 The International' },
+    PUBG: { twitch: 'pubg', label: 'PUBG Esports' },
+    HONOR: { twitch: 'hoK', label: '王者荣耀赛事' },
+  };
 
-  function getStreamUrl(): string {
-    if (showUrlInput && customStreamUrl) return customStreamUrl;
+  function getGameStreamKey(): string {
+    return selectedMatch.game;
+  }
+
+  function getStreamEmbedUrl(): string {
+    const key = getGameStreamKey();
+    const info = GAME_STREAM_MAP[key];
+    if (!info) return '';
     const domain = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    return PREDEFINED_CHANNELS[selectedChannelIdx].url + domain;
+    return `https://player.twitch.tv/?channel=${info.twitch}&parent=${domain}&parent=www.gamewayz.com&parent=gamewayz.com&muted=true`;
+  }
+
+  function getStreamPageUrl(): string {
+    const key = getGameStreamKey();
+    const info = GAME_STREAM_MAP[key];
+    if (!info) return 'https://www.twitch.tv';
+    return `https://www.twitch.tv/${info.twitch}`;
   }
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -231,12 +241,12 @@ export default function LivePage({ onBack }: LivePageProps) {
                 </div>
 
                 <div className="aspect-video bg-slate-950 relative overflow-hidden select-none">
-                  {/* Stream iframe embed */}
+                  {/* Stream embed */}
                   {isPlaying ? (
                     <iframe
-                      key={getStreamUrl()}
+                      key={getStreamEmbedUrl()}
                       className="absolute inset-0 w-full h-full"
-                      src={getStreamUrl()}
+                      src={getStreamEmbedUrl()}
                       allow="autoplay; fullscreen"
                       allowFullScreen
                     />
@@ -246,67 +256,30 @@ export default function LivePage({ onBack }: LivePageProps) {
                         <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-400/60 flex items-center justify-center hover:bg-cyan-500/30 hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/20">
                           <Play className="h-10 w-10 text-cyan-400 ml-1" />
                         </div>
-                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击开始观看直播</span>
-                        <span className="text-slate-500 text-xs mt-1">{PREDEFINED_CHANNELS[selectedChannelIdx].label}</span>
+                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击观看 {selectedMatch.teamA.shortName} vs {selectedMatch.teamB.shortName}</span>
+                        <span className="text-slate-500 text-xs mt-1">{GAME_STREAM_MAP[getGameStreamKey()]?.label || selectedMatch.tournament} · 第三方平台</span>
                       </div>
                     </div>
                   )}
 
-                  {streamError && (
+                  {embedError && (
                     <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/90">
-                      <div className="text-center">
+                      <div className="text-center px-6">
                         <Tv className="h-16 w-16 text-slate-700 mx-auto mb-3" />
-                        <p className="text-slate-400 text-sm">直播流加载失败</p>
-                        <p className="text-slate-600 text-xs mt-1">该频道可能未开播或链接不可用</p>
-                        <button onClick={() => setStreamError(false)} className="mt-4 px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">重试</button>
+                        <p className="text-slate-300 text-sm font-semibold mb-1">嵌入加载失败</p>
+                        <p className="text-slate-500 text-xs mb-4">可点击下方按钮在新页面直接观看</p>
+                        <div className="flex gap-3 justify-center">
+                          <button onClick={() => { setEmbedError(false); setIsPlaying(false); }} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-medium transition cursor-pointer">重试</button>
+                          <a href={getStreamPageUrl()} target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-slate-950 rounded-xl text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5">
+                            <Tv className="h-3.5 w-3.5" /> 在新页面观看
+                          </a>
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Channel selector bar */}
-                  <div className="absolute top-0 inset-x-0 z-10 px-4 py-2 flex items-center gap-2 flex-wrap bg-slate-950/70 backdrop-blur-sm border-b border-slate-800/50">
-                    <Tv className="h-4 w-4 text-cyan-400 shrink-0" />
-                    <span className="text-[10px] text-slate-400 font-mono mr-1">直播源:</span>
-                    <div className="flex gap-1 flex-wrap">
-                      {PREDEFINED_CHANNELS.map((ch, i) => (
-                        <button
-                          key={i}
-                          onClick={() => { setSelectedChannelIdx(i); setShowUrlInput(false); setIsPlaying(false); setStreamError(false); }}
-                          className={`text-[10px] px-2 py-1 rounded border transition cursor-pointer whitespace-nowrap ${i === selectedChannelIdx && !showUrlInput ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
-                        >
-                          {ch.label}
-                        </button>
-                      ))}
-                      <button
-                        onClick={() => setShowUrlInput(true)}
-                        className={`text-[10px] px-2 py-1 rounded border transition cursor-pointer ${showUrlInput ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
-                      >
-                        自定义
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Custom URL input */}
-                  {showUrlInput && (
-                    <div className="absolute top-[52px] inset-x-0 z-10 px-4 py-2 bg-slate-950/80 backdrop-blur-sm border-b border-slate-800/50 flex gap-2">
-                      <input
-                        type="text"
-                        value={customStreamUrl}
-                        onChange={(e) => setCustomStreamUrl(e.target.value)}
-                        placeholder="粘贴直播流地址 (支持 Twitch/YouTube/B站等)"
-                        className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-cyan-500"
-                      />
-                      <button
-                        onClick={() => { if (customStreamUrl) { setIsPlaying(true); setStreamError(false); } }}
-                        className="px-3 py-1.5 bg-cyan-500 hover:bg-cyan-600 text-slate-950 text-xs font-bold rounded-lg transition cursor-pointer"
-                      >
-                        应用
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Gradient overlay for readability */}
-                  <div className={`absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20 pointer-events-none ${showUrlInput ? 'z-[1]' : 'z-[1]'}`}></div>
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-slate-950/20 pointer-events-none z-[1]"></div>
 
                   {/* Scores overlay */}
                   <div className="absolute inset-x-0 top-[100px] z-[5] flex items-center justify-center pointer-events-none">
@@ -372,7 +345,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                         onClick={(e) => {
                           e.stopPropagation();
                           setIsPlaying(!isPlaying);
-                          setStreamError(false);
+                          setEmbedError(false);
                         }}
                         className="cursor-pointer"
                       >
