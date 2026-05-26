@@ -6,7 +6,9 @@ import {
   MessageSquare,
   ChevronRight,
   Play,
+  Pause,
   Volume2,
+  VolumeX,
   Coins,
   Sparkles,
   Info,
@@ -83,6 +85,11 @@ export default function LivePage({ onBack }: LivePageProps) {
     { id: 3, user: "直播达人", msg: "网页直播不卡顿，太流畅了！🚀", vip: false, team: "Neutral" }
   ]);
   
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
+  const [volume, setVolume] = useState(0.3);
   const [userChatMessage, setUserChatMessage] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -196,9 +203,9 @@ export default function LivePage({ onBack }: LivePageProps) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left: Stream + Events + Match List */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Streaming Video Mockup */}
+              {/* Streaming Video Player */}
               <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl relative group">
-                <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-slate-950/90 to-transparent p-4 flex items-center justify-between z-10">
+                <div className="absolute top-0 inset-x-0 bg-gradient-to-b from-slate-950/90 to-transparent p-4 flex items-center justify-between z-20">
                   <div className="flex items-center gap-3">
                     <span className="px-2.5 py-0.5 rounded text-xs font-extrabold bg-red-600 text-white flex items-center gap-1">
                       {selectedMatch.status === 'live' ? '🔴 直播中' : selectedMatch.status === 'upcoming' ? '⏳ 即将开始' : '✅ 已结束'}
@@ -210,15 +217,41 @@ export default function LivePage({ onBack }: LivePageProps) {
                   </div>
                 </div>
 
-                <div className="aspect-video bg-slate-950 flex flex-col justify-between p-6 relative overflow-hidden select-none">
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20"></div>
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div className="w-64 h-64 rounded-full border-2 border-dashed border-indigo-500/15 animate-spin duration-10000"></div>
-                    <div className="w-48 h-48 rounded-full border border-cyan-500/10 absolute animate-pulse"></div>
-                  </div>
+                <div className="aspect-video bg-slate-950 flex flex-col justify-between relative overflow-hidden select-none">
+                  {/* Actual video element */}
+                  <video
+                    ref={videoRef}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                    playsInline
+                    muted={isMuted}
+                    loop
+                    volume={volume}
+                  />
 
-                  {/* Scores */}
-                  <div className="mt-12 relative z-10 flex items-center justify-between max-w-xl mx-auto w-full bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 backdrop-blur shadow-lg">
+                  {/* Gradient overlay for readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none z-[1]"></div>
+
+                  {/* Play overlay when paused */}
+                  {!isPlaying && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/40 transition-all duration-300">
+                      <div
+                        className="flex flex-col items-center gap-3 group cursor-pointer"
+                        onClick={() => {
+                          setIsPlaying(true);
+                          videoRef.current?.play();
+                        }}
+                      >
+                        <div className="w-20 h-20 rounded-full bg-cyan-500/20 border-2 border-cyan-400/60 flex items-center justify-center group-hover:bg-cyan-500/30 group-hover:scale-110 transition-all duration-300 shadow-lg shadow-cyan-500/20">
+                          <Play className="h-10 w-10 text-cyan-400 ml-1" />
+                        </div>
+                        <span className="text-cyan-300 text-sm font-semibold tracking-wider">点击开始观看直播</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Scores overlay */}
+                  <div className="relative z-[5] flex items-center justify-between max-w-xl mx-auto w-full bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur shadow-lg mt-12">
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">{selectedMatch.teamA.logo}</span>
                       <div className="text-left">
@@ -248,20 +281,20 @@ export default function LivePage({ onBack }: LivePageProps) {
 
                   {/* Gold & Objectives (only for live matches) */}
                   {selectedMatch.status === 'live' && (
-                    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto w-full relative z-10 mt-auto mb-4 text-xs font-mono text-center">
-                      <div className="bg-slate-900/90 border border-slate-800/60 rounded-xl p-2">
+                    <div className="grid grid-cols-3 gap-4 max-w-md mx-auto w-full relative z-[5] mt-auto mb-4 text-xs font-mono text-center">
+                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
                         <div className="text-slate-400 text-[10px]">经济对比</div>
                         <div className="text-slate-200 flex justify-center gap-2 mt-0.5">
                           <span className="text-red-400">{liveMatchStats.team1Gold}</span><span>:</span><span className="text-cyan-400">{liveMatchStats.team2Gold}</span>
                         </div>
                       </div>
-                      <div className="bg-slate-900/90 border border-slate-800/60 rounded-xl p-2">
+                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
                         <div className="text-slate-400 text-[10px]">纳什男爵</div>
                         <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
                           <span className="text-red-400">{liveMatchStats.team1Barons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Barons}</span>
                         </div>
                       </div>
-                      <div className="bg-slate-900/90 border border-slate-800/60 rounded-xl p-2">
+                      <div className="bg-slate-900/80 border border-slate-800/60 rounded-xl p-2 backdrop-blur">
                         <div className="text-slate-400 text-[10px]">巨龙数量</div>
                         <div className="text-slate-200 flex justify-center gap-3 mt-0.5">
                           <span className="text-red-400">{liveMatchStats.team1Dragons}</span><span>/</span><span className="text-cyan-400">{liveMatchStats.team2Dragons}</span>
@@ -273,9 +306,36 @@ export default function LivePage({ onBack }: LivePageProps) {
                   {/* Controls */}
                   <div className="absolute bottom-0 inset-x-0 bg-slate-950/80 px-4 py-2 flex items-center justify-between text-xs text-slate-400 border-t border-slate-900 z-10">
                     <div className="flex items-center gap-3">
-                      <Play className="h-4.5 w-4.5 text-cyan-400 animate-pulse cursor-pointer" />
-                      <Volume2 className="h-4.5 w-4.5 text-slate-400 cursor-pointer" />
-                      <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isPlaying) {
+                            videoRef.current?.pause();
+                            setIsPlaying(false);
+                          } else {
+                            videoRef.current?.play();
+                            setIsPlaying(true);
+                          }
+                        }}
+                        className="cursor-pointer"
+                      >
+                        {isPlaying ? <Pause className="h-4.5 w-4.5 text-cyan-400" /> : <Play className="h-4.5 w-4.5 text-cyan-400 animate-pulse" />}
+                      </span>
+                      <span className="relative">
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (videoRef.current) {
+                              videoRef.current.muted = !isMuted;
+                              setIsMuted(!isMuted);
+                            }
+                          }}
+                          className="cursor-pointer"
+                        >
+                          {isMuted ? <VolumeX className="h-4.5 w-4.5 text-slate-500" /> : <Volume2 className="h-4.5 w-4.5 text-slate-400" />}
+                        </span>
+                      </span>
+                      {isPlaying && <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping"></span>}
                       <span className="text-[10px] font-mono">实时推流：超清 1080P / 60FPS</span>
                     </div>
                     <div className="flex items-center gap-2.5">
