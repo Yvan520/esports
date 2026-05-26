@@ -1,31 +1,84 @@
 import { useState, useEffect } from 'react';
+import { fetchLiveMatches, GAMES, TOURNAMENTS } from '../data/esportsData';
 
 interface HeroSectionProps {
   onSectionChange: (s: string) => void;
 }
 
-const HIGHLIGHTS = [
-  { game: 'LOL', badge: '🔴 LIVE', title: 'LPL春季赛', match: 'JDG vs BLG', viewers: '123万在线', accent: '#C89B3C' },
-  { game: 'VALORANT', badge: '🔴 LIVE', title: 'VCT亚太赛', match: 'EDG vs ZETA', viewers: '85万在线', accent: '#FF4655' },
-  { game: 'CS2', badge: '⏰ 即将开始', title: 'IEM卡托维兹', match: 'NAVI vs VIT', viewers: '今晚20:00', accent: '#FF6B35' },
-];
-
 export default function HeroSection({ onSectionChange }: HeroSectionProps) {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [highlights, setHighlights] = useState([
+    { game: 'LOL', badge: '🔴 LIVE', title: 'LPL春季赛', match: 'JDG vs BLG', viewers: '123万在线', accent: '#C89B3C' },
+    { game: 'VALORANT', badge: '🔴 LIVE', title: 'VCT亚太赛', match: 'EDG vs ZETA', viewers: '85万在线', accent: '#FF4655' },
+    { game: 'CS2', badge: '⏰ 即将开始', title: 'IEM卡托维兹', match: 'NAVI vs VIT', viewers: '今晚20:00', accent: '#FF6B35' },
+  ]);
+  const [stats, setStats] = useState([
+    { label: '正在进行', value: '12', unit: '场比赛' },
+    { label: '今日赛程', value: '38', unit: '场对决' },
+    { label: '在线观众', value: '890', unit: '万人次' },
+    { label: '覆盖赛事', value: '60+', unit: '顶级赛事' },
+  ]);
 
   useEffect(() => {
+    fetchLiveMatches().then(all => {
+      const live = all.filter(m => m.status === 'live');
+      const upcoming = all.filter(m => m.status === 'upcoming');
+
+      const newHighlights = live.slice(0, 3).map(m => {
+        const game = GAMES.find(g => g.id === m.game);
+        return {
+          game: m.game,
+          badge: '🔴 LIVE',
+          title: m.tournament,
+          match: `${m.teamA.shortName} vs ${m.teamB.shortName}`,
+          viewers: m.viewers ? `${(m.viewers / 10000).toFixed(0)}万在线` : '直播中',
+          accent: game?.color || '#6366f1',
+        };
+      });
+
+      if (newHighlights.length < 3) {
+        upcoming.slice(0, 3 - newHighlights.length).forEach(m => {
+          const game = GAMES.find(g => g.id === m.game);
+          newHighlights.push({
+            game: m.game,
+            badge: '⏰ 即将开始',
+            title: m.tournament,
+            match: `${m.teamA.shortName} vs ${m.teamB.shortName}`,
+            viewers: m.startTime,
+            accent: game?.color || '#6366f1',
+          });
+        });
+      }
+
+      if (newHighlights.length > 0) {
+        setHighlights(newHighlights);
+      }
+
+      const totalViewers = live.reduce((sum, m) => sum + (m.viewers || 0), 0);
+      const allGamesCount = live.length + upcoming.length;
+      setStats([
+        { label: '正在进行', value: String(live.length), unit: '场比赛' },
+        { label: '今日赛程', value: String(allGamesCount), unit: '场对决' },
+        { label: '在线观众', value: totalViewers >= 10000 ? String(Math.round(totalViewers / 10000)) : String(totalViewers || '0'), unit: totalViewers >= 10000 ? '万人次' : '人' },
+        { label: '覆盖赛事', value: String(TOURNAMENTS.length), unit: '顶级赛事' },
+      ]);
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (highlights.length <= 1) return;
     const timer = setInterval(() => {
       setAnimating(true);
       setTimeout(() => {
-        setCurrent(c => (c + 1) % HIGHLIGHTS.length);
+        setCurrent(c => (c + 1) % highlights.length);
         setAnimating(false);
       }, 300);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [highlights]);
 
-  const h = HIGHLIGHTS[current];
+  const h = highlights.length > 0 ? highlights[current % highlights.length] : highlights[0];
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
@@ -107,12 +160,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
 
           {/* Stats bar */}
           <div className="flex flex-wrap gap-8 mt-14 pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            {[
-              { label: '正在进行', value: '12', unit: '场比赛' },
-              { label: '今日赛程', value: '38', unit: '场对决' },
-              { label: '在线观众', value: '890', unit: '万人次' },
-              { label: '覆盖赛事', value: '60+', unit: '顶级赛事' },
-            ].map(stat => (
+            {stats.map(stat => (
               <div key={stat.label}>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-black" style={{ color: '#a5b4fc', fontFamily: 'Rajdhani, sans-serif' }}>{stat.value}</span>
