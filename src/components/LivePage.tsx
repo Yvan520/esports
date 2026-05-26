@@ -104,7 +104,7 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [showProxySettings, setShowProxySettings] = useState(false);
 
   const GAME_STREAM_MAP: Record<string, { twitch: string; youtube: string; bilibili: string; bilibiliRealId: string; huya: string; douyu: string; label: string }> = {
-    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: '7734200', huya: '660001', douyu: '288016', label: '英雄联盟 LPL' },
+    LOL: { twitch: 'lpl', youtube: 'UC9MAhZQQd9egwWCxrwSIsJQ', bilibili: '6', bilibiliRealId: '7734200', huya: '660000', douyu: '288016', label: '英雄联盟 LPL' },
     VALORANT: { twitch: 'valorant_esports', youtube: 'UC8CXsDF7Rd0W3PRjM2SZBKA', bilibili: '234', bilibiliRealId: '22683224', huya: '880001', douyu: '688001', label: 'VALORANT VCT' },
     CS2: { twitch: 'esl_csgo', youtube: 'UC9ZR0jD4iS1L6Gq6qQqW6aQ', bilibili: '38', bilibiliRealId: '33230', huya: '110001', douyu: '288016', label: 'CS2 ESL' },
     DOTA2: { twitch: 'dota2ti', youtube: 'UCYNDoOH6F_2yXuKA6KDOGDQ', bilibili: '3', bilibiliRealId: '3', huya: '210001', douyu: '556601', label: 'DOTA 2 TI' },
