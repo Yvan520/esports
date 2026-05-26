@@ -8,14 +8,22 @@ export default function LiveTicker() {
   useEffect(() => {
     fetchLiveMatches().then(all => {
       const items: string[] = [];
-      const live = all.filter(m => m.status === 'live');
-      const upcoming = all.filter(m => m.status === 'upcoming');
+      const live = all.filter((r: any) => r.isLive);
+      const upcoming = all.filter((r: any) => !r.isLive);
 
-      live.forEach(m => {
-        items.push(`🔴 LIVE · ${m.teamA.shortName} vs ${m.teamB.shortName} · ${m.tournament} · ${m.teamA.score ?? 0}:${m.teamB.score ?? 0}`);
+      live.forEach(r => {
+        const m = r.match || {};
+        const title = m.teamA?.shortName && m.teamB?.shortName
+          ? `${m.teamA.shortName} vs ${m.teamB.shortName}`
+          : r.title || r.game;
+        items.push(`🔴 LIVE · ${title} · ${m.tournament || r.game} · ${m.teamA?.score ?? 0}:${m.teamB?.score ?? 0}`);
       });
-      upcoming.forEach(m => {
-        items.push(`⏰ ${m.teamA.shortName} vs ${m.teamB.shortName} · ${m.tournament} · ${m.startTime}`);
+      upcoming.forEach(r => {
+        const m = r.match || {};
+        const title = m.teamA?.shortName && m.teamB?.shortName
+          ? `${m.teamA.shortName} vs ${m.teamB.shortName}`
+          : r.title || r.game;
+        items.push(`⏰ ${title} · ${m.tournament || r.game} · ${m.startTime || '即将开始'}`);
       });
 
       if (items.length > 0) {

@@ -22,30 +22,32 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
 
   useEffect(() => {
     fetchLiveMatches().then(all => {
-      const live = all.filter(m => m.status === 'live');
-      const upcoming = all.filter(m => m.status === 'upcoming');
+      const live = all.filter((r: any) => r.isLive);
+      const upcoming = all.filter((r: any) => !r.isLive);
 
-      const newHighlights = live.slice(0, 3).map(m => {
-        const game = GAMES.find(g => g.id === m.game);
+      const newHighlights = live.slice(0, 3).map(r => {
+        const game = GAMES.find(g => g.id === r.game);
+        const m = r.match || {};
         return {
-          game: m.game,
+          game: r.game,
           badge: '🔴 LIVE',
-          title: m.tournament,
-          match: `${m.teamA.shortName} vs ${m.teamB.shortName}`,
-          viewers: m.viewers ? `${(m.viewers / 10000).toFixed(0)}万在线` : '直播中',
+          title: r.title?.split('】')[0]?.replace('【', '') || m.tournament || r.game,
+          match: m.teamA?.shortName && m.teamB?.shortName ? `${m.teamA.shortName} vs ${m.teamB.shortName}` : r.title || '直播中',
+          viewers: r.viewers ? `${(r.viewers / 10000).toFixed(0)}万在线` : '直播中',
           accent: game?.color || '#6366f1',
         };
       });
 
       if (newHighlights.length < 3) {
-        upcoming.slice(0, 3 - newHighlights.length).forEach(m => {
-          const game = GAMES.find(g => g.id === m.game);
+        upcoming.slice(0, 3 - newHighlights.length).forEach(r => {
+          const game = GAMES.find(g => g.id === r.game);
+          const m = r.match || {};
           newHighlights.push({
-            game: m.game,
+            game: r.game,
             badge: '⏰ 即将开始',
-            title: m.tournament,
-            match: `${m.teamA.shortName} vs ${m.teamB.shortName}`,
-            viewers: m.startTime,
+            title: r.title?.split('】')[0]?.replace('【', '') || m.tournament || r.game,
+            match: m.teamA?.shortName && m.teamB?.shortName ? `${m.teamA.shortName} vs ${m.teamB.shortName}` : r.title || '即将开始',
+            viewers: m.startTime || '即将开始',
             accent: game?.color || '#6366f1',
           });
         });
@@ -55,7 +57,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
         setHighlights(newHighlights);
       }
 
-      const totalViewers = live.reduce((sum, m) => sum + (m.viewers || 0), 0);
+      const totalViewers = live.reduce((sum, r) => sum + (r.viewers || 0), 0);
       const allGamesCount = live.length + upcoming.length;
       setStats([
         { label: '正在进行', value: String(live.length), unit: '场比赛' },
@@ -174,7 +176,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
 
         {/* Carousel dots */}
         <div className="absolute bottom-16 right-8 flex flex-col gap-2">
-          {HIGHLIGHTS.map((_, i) => (
+          {highlights.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrent(i)}
