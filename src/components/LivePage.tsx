@@ -88,8 +88,7 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isMuted, setIsMuted] = useState(true);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [volume, setVolume] = useState(0.3);
+  const [videoError, setVideoError] = useState(false);
   const [userChatMessage, setUserChatMessage] = useState("");
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -222,12 +221,22 @@ export default function LivePage({ onBack }: LivePageProps) {
                   <video
                     ref={videoRef}
                     className="absolute inset-0 w-full h-full object-cover"
-                    src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                    src="https://www.w3schools.com/html/mov_bbb.mp4"
+                    poster="https://www.w3schools.com/html/pic_trulli.jpg"
                     playsInline
                     muted={isMuted}
                     loop
-                    volume={volume}
+                    onError={() => setVideoError(true)}
                   />
+                  {videoError && (
+                    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950">
+                      <div className="text-center">
+                        <Tv className="h-16 w-16 text-slate-700 mx-auto mb-3" />
+                        <p className="text-slate-400 text-sm">视频流加载失败</p>
+                        <p className="text-slate-600 text-xs mt-1">可尝试刷新页面或检查网络连接</p>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Gradient overlay for readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/40 pointer-events-none z-[1]"></div>
