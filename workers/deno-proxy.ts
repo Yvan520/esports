@@ -184,15 +184,25 @@ async function checkRoomLive(platform: string, roomId: string): Promise<{ isLive
 }
 
 // ============================================================
-// 自动发现 B站 游戏赛事房间号
+// 自动发现 B站 游戏赛事房间号（搜得到就用最新的，搜不到用备用）
 // ============================================================
+
+// 游戏 → B站已知官方房间号（备用，搜索失败时使用）
+const FALLBACK_BILIBILI: Record<string, string> = {
+  LOL: '7734200',
+  VALORANT: '22908869',
+  CS2: '21495949',
+  DOTA2: '21495945',
+  PUBG: '11218604',
+  HONOR: '21144080',
+};
 
 // 游戏 → B站搜索关键词
 const GAME_KEYWORDS: Record<string, string> = {
-  LOL: 'LPL赛事官方',
+  LOL: '英雄联盟赛事',
   VALORANT: '无畏契约赛事',
-  CS2: 'CS2完美世界电竞',
-  DOTA2: 'DOTA2完美世界电竞',
+  CS2: '完美世界电竞CS2',
+  DOTA2: '完美世界电竞DOTA2',
   PUBG: 'PUBG赛事',
   HONOR: '王者荣耀赛事',
 };
@@ -222,11 +232,14 @@ async function discoverBilibiliRooms(): Promise<Record<string, string>> {
       const data: any = await res.json();
       const rooms = data?.data?.result;
       if (rooms && rooms.length > 0) {
-        // 按关注数排序，取最官方的房间
         rooms.sort((a: any, b: any) => (b.atten || 0) - (a.atten || 0));
         result[game] = String(rooms[0].roomid);
       }
     } catch {}
+    // 搜索失败时用备用房间号
+    if (!result[game] && FALLBACK_BILIBILI[game]) {
+      result[game] = FALLBACK_BILIBILI[game];
+    }
   }
   return result;
 }

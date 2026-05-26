@@ -107,16 +107,16 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [embedError, setEmbedError] = useState(false);
   const [userChatMessage, setUserChatMessage] = useState("");
 
-  type Platform = 'twitch' | 'youtube' | 'bilibili' | 'huya' | 'douyu' | 'custom';
+  type Platform = 'bilibili' | 'twitch' | 'youtube' | 'huya' | 'douyu' | 'custom';
   const PLATFORMS: { id: Platform; label: string; color: string; canEmbed: boolean; viaProxy?: boolean }[] = [
+    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false, viaProxy: true },
     { id: 'twitch', label: 'Twitch', color: '#9146FF', canEmbed: true },
     { id: 'youtube', label: 'YouTube', color: '#FF0033', canEmbed: true },
-    { id: 'bilibili', label: 'B站直播', color: '#00A1D6', canEmbed: false, viaProxy: true },
     { id: 'huya', label: '虎牙直播', color: '#FF6B35', canEmbed: false, viaProxy: true },
     { id: 'douyu', label: '斗鱼直播', color: '#FF8C00', canEmbed: false, viaProxy: true },
     { id: 'custom', label: '自定义', color: '#8B5CF6', canEmbed: true },
   ];
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('twitch');
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>('bilibili');
   const [customStreamUrl, setCustomStreamUrl] = useState("");
   const [proxyUrl, setProxyUrl] = useState("https://healthy-mustang-32.yvan520.deno.net");
   const [showProxySettings, setShowProxySettings] = useState(false);
