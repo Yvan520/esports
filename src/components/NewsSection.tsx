@@ -23,7 +23,7 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
           </h2>
           <p className="text-gray-500 text-sm mt-1">实时赛事动态 · 深度分析报道</p>
         </div>
-        <button className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer">更多资讯 →</button>
+        <a href="/news/" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer">更多资讯 →</a>
       </div>
 
       {filtered.length === 0 ? (
@@ -35,7 +35,8 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Featured - first item large */}
           {filtered[0] && (
-            <div
+            <a
+              href="/news/"
               className="md:row-span-2 rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.01] hover:-translate-y-1"
               style={{ background: 'rgba(15,15,35,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
             >
@@ -71,10 +72,10 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600 text-xs">{filtered[0].date}</span>
-                  <button className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors cursor-pointer">阅读全文 →</button>
+                  <span className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors cursor-pointer">阅读全文 →</span>
                 </div>
               </div>
-            </div>
+            </a>
           )}
 
           {/* Rest items */}
@@ -82,8 +83,9 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
             const game = GAMES.find(g => g.id === news.game);
             const tc = tagColors[news.tag];
             return (
-              <div
+              <a
                 key={news.id}
+                href="/news/"
                 className="flex gap-4 p-4 rounded-2xl cursor-pointer group transition-all duration-300 hover:scale-[1.01]"
                 style={{ background: 'rgba(15,15,35,0.8)', border: '1px solid rgba(255,255,255,0.06)' }}
               >
@@ -105,8 +107,8 @@ export default function NewsSection({ activeGame }: NewsSectionProps) {
                   </h3>
                   <div className="text-gray-600 text-xs">{news.date}</div>
                 </div>
-              </div>
-            );
+            </a>
+          );
           })}
         </div>
       )}
