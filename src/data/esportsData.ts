@@ -270,13 +270,13 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       const title = room.title || `${gameInfo.name} 直播中`;
       const viewers = room.viewers || 0;
 
-      // Try to extract team names from title (rough parse)
+      // Try to extract team names from title
       let teamA = 'Team A';
       let teamB = 'Team B';
-      const vsMatch = title.match(/(.+?)\s*v[vs\.]\s*(.+)/i);
+      const vsMatch = title.match(/([A-Za-z0-9\u4e00-\u9fff]+)\s*v[vs\.]\s*([A-Za-z0-9\u4e00-\u9fff]+)/i);
       if (vsMatch) {
-        teamA = vsMatch[1].trim().split(' ').pop() || 'Team A';
-        teamB = vsMatch[2].trim().split(' ')[0] || 'Team B';
+        teamA = vsMatch[1];
+        teamB = vsMatch[2];
       }
 
       liveMatches.push({
