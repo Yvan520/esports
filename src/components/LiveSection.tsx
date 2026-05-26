@@ -1,4 +1,5 @@
-import { MATCHES, GAMES, GameType } from '../data/esportsData';
+import { useState, useEffect } from 'react';
+import { MATCHES, GAMES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
 
 interface LiveSectionProps {
   activeGame: GameType | 'ALL';
@@ -11,7 +12,13 @@ function formatViewers(n: number): string {
 }
 
 export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionProps) {
-  const liveMatches = MATCHES.filter(m => {
+  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+
+  useEffect(() => {
+    fetchLiveMatches().then(setAllMatches).catch(() => {});
+  }, []);
+
+  const liveMatches = allMatches.filter(m => {
     const gameMatch = activeGame === 'ALL' || m.game === activeGame;
     return gameMatch && m.status === 'live';
   });

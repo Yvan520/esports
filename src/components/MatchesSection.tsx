@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MATCHES, GameType } from '../data/esportsData';
+import { useState, useEffect } from 'react';
+import { MATCHES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
 import MatchCard from './MatchCard';
 
 interface MatchesSectionProps {
@@ -9,18 +9,23 @@ interface MatchesSectionProps {
 
 export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
+  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
 
-  const filtered = MATCHES.filter(m => {
+  useEffect(() => {
+    fetchLiveMatches().then(setAllMatches).catch(() => {});
+  }, []);
+
+  const filtered = allMatches.filter(m => {
     const gameMatch = activeGame === 'ALL' || m.game === activeGame;
     const tabMatch = activeTab === 'all' || m.status === activeTab;
     return gameMatch && tabMatch;
   });
 
   const tabs = [
-    { id: 'all', label: '全部', count: MATCHES.filter(m => activeGame === 'ALL' || m.game === activeGame).length },
-    { id: 'live', label: '进行中', count: MATCHES.filter(m => m.status === 'live' && (activeGame === 'ALL' || m.game === activeGame)).length },
-    { id: 'upcoming', label: '即将开始', count: MATCHES.filter(m => m.status === 'upcoming' && (activeGame === 'ALL' || m.game === activeGame)).length },
-    { id: 'finished', label: '已结束', count: MATCHES.filter(m => m.status === 'finished' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'all', label: '全部', count: allMatches.filter(m => activeGame === 'ALL' || m.game === activeGame).length },
+    { id: 'live', label: '进行中', count: allMatches.filter(m => m.status === 'live' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'upcoming', label: '即将开始', count: allMatches.filter(m => m.status === 'upcoming' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'finished', label: '已结束', count: allMatches.filter(m => m.status === 'finished' && (activeGame === 'ALL' || m.game === activeGame)).length },
   ] as const;
 
   return (
