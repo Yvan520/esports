@@ -5,7 +5,7 @@ interface NewsSectionProps {
 }
 
 export default function NewsSection({ activeGame }: NewsSectionProps) {
-  const filtered = NEWS.filter(n => activeGame === 'ALL' || n.game === activeGame);
+  const filtered = NEWS.filter(n => activeGame === 'ALL' || n.game === activeGame).slice(0, 6);
 
   const tagColors: Record<string, { color: string; bg: string }> = {
     '赛事速报': { color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
