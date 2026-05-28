@@ -505,7 +505,6 @@ export async function fetchLiveMatches(): Promise<Match[]> {
     if (liveByGame.size === 0) return MATCHES;
 
     const liveMatches: Match[] = [];
-    let idCounter = 1000;
 
     for (const [gameId, room] of liveByGame) {
       const gameInfo = GAMES.find(g => g.id === gameId);
@@ -514,10 +513,11 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       const title = room.title || '';
       const viewers = room.viewers || 0;
       const teams = extractTeams(title);
+      const stableId = `bilibili-${gameId}`;
 
       if (teams) {
         liveMatches.push({
-          id: `live-${idCounter++}`,
+          id: stableId,
           game: gameId as GameType,
           tournament: `${gameInfo.name}`,
           stage: 'B站直播',
@@ -531,7 +531,7 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       } else {
         // 解析不出队伍名的，显示房间原始标题
         liveMatches.push({
-          id: `live-${idCounter++}`,
+          id: stableId,
           game: gameId as GameType,
           tournament: `${gameInfo.name}`,
           stage: 'B站直播',

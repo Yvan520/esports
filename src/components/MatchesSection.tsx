@@ -4,7 +4,7 @@ import MatchCard from './MatchCard';
 
 interface MatchesSectionProps {
   activeGame: GameType | 'ALL';
-  onWatchMatch?: () => void;
+  onWatchMatch?: (matchId: string) => void;
 }
 
 export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {
@@ -14,7 +14,7 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
   useEffect(() => {
     const load = () => fetchLiveMatches().then(setAllMatches).catch(() => {});
     load();
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
   }, []);
 

@@ -13,42 +13,19 @@ import {
   Send,
   Settings,
 } from "lucide-react";
-import { MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
+import { GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
 import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
   onBack: () => void;
+  initialMatchId?: string | null;
 }
 
-function formatViewers(n: number): string {
-  if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
-  return n.toString();
-}
-
-const LIVE_EVENTS_TEMPLATES = [
-  (a: string, b: string) => `🔴 ${a} 在中路完成一次关键击杀！`,
-  (a: string, b: string) => `⚔️ 团战爆发！${b} 在大龙坑打出 2换3`,
-  (a: string, b: string) => `🐉 ${b} 成功拿下炼狱巨龙！`,
-  (a: string, b: string) => `🏆 ${a} Faker 级操作，完成双杀！`,
-  (a: string, b: string) => `⚡ 纳什男爵已刷新！双方战队正在集结。`,
-  (a: string, b: string) => `💰 经济差缩小至 800g，${a} 略微领先`,
-  (a: string, b: string) => `🛡️ ${a} 成功防守下路二塔`,
-  (a: string, b: string) => `💥 精彩团战！${a} 击杀 ${b} 四名成员！`,
-];
-
-const BOT_CHAT_TEMPLATES = [
-  (a: string, b: string) => ({ user: "电竞老司机", msg: `${a} 今天状态太好了！🔥`, vip: true, team: a }),
-  (a: string, b: string) => ({ user: "RankKing", msg: `${b} 还有机会，只要拿下大龙就能翻盘！`, vip: false, team: b }),
-  (a: string, b: string) => ({ user: "观赛达人", msg: `${a} 这波操作太秀了吧！！！🐐`, vip: true, team: a }),
-  (a: string, b: string) => ({ user: "赛事通", msg: "这已经是 BO5 第三局了，现场观众太热情了！", vip: false, team: "Neutral" }),
-  (a: string, b: string) => ({ user: "战术大师", msg: `${b} 的阵容有点贪，需要后期发育。`, vip: true, team: b }),
-  (a: string, b: string) => ({ user: "直播达人", msg: "网页端看直播不卡顿，1080p 60fps 太流畅了！🚀", vip: false, team: "Neutral" }),
-  (a: string, b: string) => ({ user: "竞猜王者", msg: `我把积分全压 ${a} 赢第三局！冲冲冲！`, vip: true, team: a }),
-];
-
-export default function LivePage({ onBack }: LivePageProps) {
-  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
+  const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [initialSelectionDone, setInitialSelectionDone] = useState(false);
 
   useEffect(() => {
     const load = () => fetchLiveMatches().then(live => {
@@ -56,31 +33,36 @@ export default function LivePage({ onBack }: LivePageProps) {
       setDataLoading(false);
     });
     load();
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
   }, []);
 
   const liveMatches = allMatches.filter(m => m.status === 'live');
-  const defaultMatch = liveMatches[0] || allMatches[0];
+  const selectedMatch = selectedMatchId
+    ? allMatches.find(m => m.id === selectedMatchId) ?? liveMatches[0] ?? allMatches[0] ?? null
+    : liveMatches[0] ?? allMatches[0] ?? null;
 
-  const [selectedMatch, setSelectedMatch] = useState<Match>(defaultMatch);
-
-  // Sync selectedMatch when live data loads
+  // Auto-select on initial load: use initialMatchId if provided, else first live match
   useEffect(() => {
-    const live = allMatches.filter(m => m.status === 'live');
-    if (live.length > 0) {
-      setSelectedMatch(live[0]);
+    if (initialSelectionDone) return;
+    if (initialMatchId && allMatches.some(m => m.id === initialMatchId)) {
+      setSelectedMatchId(initialMatchId);
+      setInitialSelectionDone(true);
+    } else if (liveMatches.length > 0) {
+      setSelectedMatchId(liveMatches[0].id);
+      setInitialSelectionDone(true);
     }
-  }, [allMatches]);
+  }, [initialSelectionDone, initialMatchId, liveMatches, allMatches]);
+
   const [notification, setNotification] = useState<string | null>("欢迎来到赛事直播大厅！参与实时预测即可获得竞技积分。");
 
-  const game = GAMES.find(g => g.id === selectedMatch.game);
+  const game = selectedMatch ? GAMES.find(g => g.id === selectedMatch.game) : undefined;
   const teamAColor = game?.color || '#6366f1';
-  const teamBColor = game ? GAMES.find(g => g.id !== selectedMatch.game)?.color || '#FF4655' : '#FF4655';
+  const teamBColor = game ? GAMES.find(g => g.id !== selectedMatch?.game)?.color || '#FF4655' : '#FF4655';
 
-  const [liveMatchStats, setLiveMatchStats] = useState({
-    team1Score: selectedMatch.teamA.score ?? 0,
-    team2Score: selectedMatch.teamB.score ?? 0,
+  const defaultStats = {
+    team1Score: selectedMatch?.teamA.score ?? 0,
+    team2Score: selectedMatch?.teamB.score ?? 0,
     gameTime: "00:00",
     team1Gold: "0.0k",
     team2Gold: "0.0k",
@@ -92,20 +74,43 @@ export default function LivePage({ onBack }: LivePageProps) {
     team2VotedPercent: 45,
     hasVoted: false,
     votedTeam: ""
-  });
+  };
+  const [liveMatchStats, setLiveMatchStats] = useState(defaultStats);
 
-  const [liveEvents, setLiveEvents] = useState<string[]>([
-    `🕹️ ${selectedMatch.tournament} ${selectedMatch.stage} 比赛正式开始！`,
-    `💰 首杀由 ${selectedMatch.teamA.shortName} 在上路拿下！`,
-    `🐉 ${selectedMatch.teamA.shortName} 拿下第一条小龙。`,
-  ]);
+  const [liveEvents, setLiveEvents] = useState<string[]>([]);
 
-  const [chatMessages, setChatMessages] = useState<{ id: number; user: string; msg: string; isUser?: boolean; vip?: boolean; team?: string }[]>([
-    { id: 1, user: "电竞老司机", msg: `${selectedMatch.teamA.shortName} 今天状态太好了！🔥`, vip: true, team: selectedMatch.teamA.shortName },
-    { id: 2, user: "RankKing", msg: `${selectedMatch.teamB.shortName} 稳住，还有机会！`, vip: false, team: selectedMatch.teamB.shortName },
-    { id: 3, user: "直播达人", msg: "网页直播不卡顿，太流畅了！🚀", vip: false, team: "Neutral" }
-  ]);
+  const [chatMessages, setChatMessages] = useState<{ id: number; user: string; msg: string; isUser?: boolean; vip?: boolean; team?: string }[]>([]);
   
+  // Reset match-specific state when user picks a different match
+  useEffect(() => {
+    if (!selectedMatch) return;
+    setLiveMatchStats({
+      team1Score: selectedMatch.teamA.score ?? 0,
+      team2Score: selectedMatch.teamB.score ?? 0,
+      gameTime: "00:00",
+      team1Gold: "0.0k",
+      team2Gold: "0.0k",
+      team1Barons: 0,
+      team2Barons: 0,
+      team1Dragons: 0,
+      team2Dragons: 0,
+      team1VotedPercent: 55,
+      team2VotedPercent: 45,
+      hasVoted: false,
+      votedTeam: ""
+    });
+    setLiveEvents([
+      `🕹️ ${selectedMatch.tournament} ${selectedMatch.stage} 比赛正式开始！`,
+      `💰 首杀由 ${selectedMatch.teamA.shortName} 在上路拿下！`,
+      `🐉 ${selectedMatch.teamA.shortName} 拿下第一条小龙。`,
+    ]);
+    setChatMessages([
+      { id: Date.now(), user: "电竞老司机", msg: `${selectedMatch.teamA.shortName} 今天状态太好了！🔥`, vip: true, team: selectedMatch.teamA.shortName },
+      { id: Date.now() + 1, user: "RankKing", msg: `${selectedMatch.teamB.shortName} 稳住，还有机会！`, vip: false, team: selectedMatch.teamB.shortName },
+      { id: Date.now() + 2, user: "直播达人", msg: "网页直播不卡顿，太流畅了！🚀", vip: false, team: "Neutral" }
+    ]);
+  }, [selectedMatchId]);
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [embedError, setEmbedError] = useState(false);
   const [userChatMessage, setUserChatMessage] = useState("");
@@ -216,28 +221,13 @@ export default function LivePage({ onBack }: LivePageProps) {
     if (container) container.scrollTop = container.scrollHeight;
   }, [chatMessages]);
 
-  useEffect(() => {
-    if (selectedMatch.status !== 'live') return;
-    const interval = setInterval(() => {
-      setLiveMatchStats((prev) => {
-        const timeParts = prev.gameTime.split(":");
-        let minutes = parseInt(timeParts[0]);
-        let seconds = parseInt(timeParts[1]) + 3;
-        if (seconds >= 60) { minutes += 1; seconds = seconds - 60; }
-        const score1Add = Math.random() > 0.75 ? 1 : 0;
-        const score2Add = Math.random() > 0.85 ? 1 : 0;
-        const gold1Val = parseFloat(prev.team1Gold) + (score1Add * 0.4) + (Math.random() * 0.1);
-        const gold2Val = parseFloat(prev.team2Gold) + (score2Add * 0.4) + (Math.random() * 0.1);
-        return {
-          ...prev,
-          gameTime: `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
-          team1Score: prev.team1Score + score1Add,
-          team2Score: prev.team2Score + score2Add,
-          team1Gold: `${gold1Val.toFixed(1)}k`,
-          team2Gold: `${gold2Val.toFixed(1)}k`
-        };
-      });
+  // Use real match scores (stop faking game time/gold)
+  const displayScoreA = selectedMatch.teamA.score ?? liveMatchStats.team1Score;
+  const displayScoreB = selectedMatch.teamB.score ?? liveMatchStats.team2Score;
 
+  useEffect(() => {
+    if (!selectedMatch || selectedMatch.status !== 'live') return;
+    const interval = setInterval(() => {
       if (Math.random() > 0.65) {
         const t = LIVE_EVENTS_TEMPLATES[Math.floor(Math.random() * LIVE_EVENTS_TEMPLATES.length)];
         setLiveEvents((prev) => [t(selectedMatch.teamA.shortName, selectedMatch.teamB.shortName), ...prev.slice(0, 12)]);
@@ -278,6 +268,17 @@ export default function LivePage({ onBack }: LivePageProps) {
       setChatMessages((prev) => [...prev, { id: Date.now() + 1, user: "电竞智囊团", msg: `@我 (You) ${replies[Math.floor(Math.random() * replies.length)]}`, vip: false, team: "Neutral" }]);
     }, 1200);
   };
+
+  if (dataLoading || !selectedMatch) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-10 h-10 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">正在加载直播数据...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950">
@@ -396,13 +397,10 @@ export default function LivePage({ onBack }: LivePageProps) {
                   <div className="text-center px-2">
                     <div className="text-xs text-slate-500 font-mono">{selectedMatch.tournament} · {selectedMatch.stage}</div>
                     <div className="flex items-center gap-2 justify-center mt-1">
-                      <span className="text-xl font-extrabold text-red-500">{liveMatchStats.team1Score}</span>
+                      <span className="text-xl font-extrabold text-red-500">{displayScoreA}</span>
                       <span className="text-slate-600 text-xs font-bold">VS</span>
-                      <span className="text-xl font-extrabold text-cyan-400">{liveMatchStats.team2Score}</span>
+                      <span className="text-xl font-extrabold text-cyan-400">{displayScoreB}</span>
                     </div>
-                    {selectedMatch.status === 'live' && (
-                      <div className="text-[10px] font-mono text-yellow-500 mt-0.5">🕒 {liveMatchStats.gameTime}</div>
-                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{selectedMatch.teamB.logo}</span>
@@ -528,7 +526,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                     {allMatches.filter(m => m.status === 'live').map(m => {
                       const isSelected = m.id === selectedMatch.id;
                       return (
-                        <div key={m.id} onClick={() => { setSelectedMatch(m); triggerAlert(`已切换至 ${m.teamA.shortName} vs ${m.teamB.shortName}`); }}
+                        <div key={m.id} onClick={() => { setSelectedMatchId(m.id); triggerAlert(`已切换至 ${m.teamA.shortName} vs ${m.teamB.shortName}`); }}
                           className={`bg-slate-950 border rounded-xl p-3 space-y-2 hover:border-cyan-500/50 transition cursor-pointer ${isSelected ? 'border-cyan-500/50 shadow-md shadow-cyan-950/40' : 'border-slate-800'}`}>
                           <div className="flex justify-between text-xs items-center">
                             <span className="text-[10px] text-slate-500 font-mono">{m.tournament}</span>
@@ -556,7 +554,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                   <div className="space-y-3">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-2 border-l-2 border-yellow-500">即将开始</div>
                     {allMatches.filter(m => m.status === 'upcoming').map(m => (
-                      <div key={m.id} onClick={() => { setSelectedMatch(m); triggerAlert(`已查看预告：${m.teamA.shortName} vs ${m.teamB.shortName}`); }}
+                      <div key={m.id} onClick={() => { setSelectedMatchId(m.id); triggerAlert(`已查看预告：${m.teamA.shortName} vs ${m.teamB.shortName}`); }}
                         className="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 hover:border-yellow-500/40 transition cursor-pointer">
                         <div className="flex justify-between text-xs items-center">
                           <span className="text-[10px] text-slate-500 font-mono">{m.tournament}</span>
@@ -578,7 +576,7 @@ export default function LivePage({ onBack }: LivePageProps) {
                   <div className="space-y-3">
                     <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-2 border-l-2 border-slate-700">已结束</div>
                     {allMatches.filter(m => m.status === 'finished').map(m => (
-                      <div key={m.id} onClick={() => { setSelectedMatch(m); }}
+                      <div key={m.id} onClick={() => { setSelectedMatchId(m.id); }}
                         className="bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2 hover:border-slate-700 transition cursor-pointer">
                         <div className="flex justify-between text-xs items-center">
                           <span className="text-[10px] text-slate-500 font-mono">{m.tournament}</span>

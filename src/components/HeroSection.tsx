@@ -64,7 +64,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
       ]);
     }).catch(() => {});
     load();
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
   }, []);
 

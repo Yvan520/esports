@@ -25,6 +25,7 @@ export default function App() {
   const [activeGame, setActiveGame] = useState<GameType | 'ALL'>('ALL');
   const [activeSection, setActiveSection] = useState('home');
   const [showLivePage, setShowLivePage] = useState(false);
+  const [initialMatchId, setInitialMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     const base = 'GameWayz 电竞赛事中心';
@@ -91,17 +92,19 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleWatchMatch = () => {
+  const handleWatchMatch = (matchId?: string) => {
+    if (matchId) setInitialMatchId(matchId);
     setShowLivePage(true);
     window.scrollTo({ top: 0 });
   };
 
   const handleBackFromLive = () => {
     setShowLivePage(false);
+    setInitialMatchId(null);
   };
 
   if (showLivePage) {
-    return <LivePage onBack={handleBackFromLive} />;
+    return <LivePage onBack={handleBackFromLive} initialMatchId={initialMatchId} />;
   }
 
   return (

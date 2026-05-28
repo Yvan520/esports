@@ -3,7 +3,7 @@ import { MATCHES, GAMES, GameType, fetchLiveMatches, type Match } from '../data/
 
 interface LiveSectionProps {
   activeGame: GameType | 'ALL';
-  onWatchMatch?: () => void;
+  onWatchMatch?: (matchId: string) => void;
 }
 
 function formatViewers(n: number): string {
@@ -17,7 +17,7 @@ export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionPro
   useEffect(() => {
     const load = () => fetchLiveMatches().then(setAllMatches).catch(() => {});
     load();
-    const timer = setInterval(load, 60000);
+    const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -53,12 +53,12 @@ export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionPro
   );
 }
 
-function LiveMatchCard({ match, featured, onWatch }: { match: typeof MATCHES[0]; featured: boolean; onWatch: () => void }) {
+function LiveMatchCard({ match, featured, onWatch }: { match: typeof MATCHES[0]; featured: boolean; onWatch: (matchId: string) => void }) {
   const game = GAMES.find(g => g.id === match.game);
 
   return (
     <div
-      onClick={onWatch}
+      onClick={() => onWatch(match.id)}
       className="rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 hover:-translate-y-1"
       style={{
         background: 'rgba(15,15,35,0.85)',
@@ -129,7 +129,7 @@ function LiveMatchCard({ match, featured, onWatch }: { match: typeof MATCHES[0];
             <span className="text-xs text-gray-500">👁️</span>
             <span className="text-xs text-gray-400">{match.viewers ? formatViewers(match.viewers) : '-'} 人在观看</span>
           </div>
-          <button onClick={e => { e.stopPropagation(); onWatch(); }}
+          <button onClick={e => { e.stopPropagation(); onWatch(match.id); }}
             className="px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.8), rgba(139,92,246,0.8))', color: 'white' }}>
             🔴 进入直播
