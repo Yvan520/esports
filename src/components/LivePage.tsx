@@ -21,6 +21,32 @@ interface LivePageProps {
   initialMatchId?: string | null;
 }
 
+function formatViewers(n: number): string {
+  if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
+  return n.toString();
+}
+
+const LIVE_EVENTS_TEMPLATES = [
+  (a: string, b: string) => `🔴 ${a} 在中路完成一次关键击杀！`,
+  (a: string, b: string) => `⚔️ 团战爆发！${b} 在大龙坑打出 2换3`,
+  (a: string, b: string) => `🐉 ${b} 成功拿下炼狱巨龙！`,
+  (a: string, b: string) => `🏆 ${a} Faker 级操作，完成双杀！`,
+  (a: string, b: string) => `⚡ 纳什男爵已刷新！双方战队正在集结。`,
+  (a: string, b: string) => `💰 经济差缩小至 800g，${a} 略微领先`,
+  (a: string, b: string) => `🛡️ ${a} 成功防守下路二塔`,
+  (a: string, b: string) => `💥 精彩团战！${a} 击杀 ${b} 四名成员！`,
+];
+
+const BOT_CHAT_TEMPLATES = [
+  (a: string, b: string) => ({ user: "电竞老司机", msg: `${a} 今天状态太好了！🔥`, vip: true, team: a }),
+  (a: string, b: string) => ({ user: "RankKing", msg: `${b} 还有机会，只要拿下大龙就能翻盘！`, vip: false, team: b }),
+  (a: string, b: string) => ({ user: "观赛达人", msg: `${a} 这波操作太秀了吧！！！🐐`, vip: true, team: a }),
+  (a: string, b: string) => ({ user: "赛事通", msg: "这已经是 BO5 第三局了，现场观众太热情了！", vip: false, team: "Neutral" }),
+  (a: string, b: string) => ({ user: "战术大师", msg: `${b} 的阵容有点贪，需要后期发育。`, vip: true, team: b }),
+  (a: string, b: string) => ({ user: "直播达人", msg: "网页端看直播不卡顿，1080p 60fps 太流畅了！🚀", vip: false, team: "Neutral" }),
+  (a: string, b: string) => ({ user: "竞猜王者", msg: `我把积分全压 ${a} 赢第三局！冲冲冲！`, vip: true, team: a }),
+];
+
 export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
   const [allMatches, setAllMatches] = useState<Match[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
@@ -222,8 +248,8 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
   }, [chatMessages]);
 
   // Use real match scores (stop faking game time/gold)
-  const displayScoreA = selectedMatch.teamA.score ?? liveMatchStats.team1Score;
-  const displayScoreB = selectedMatch.teamB.score ?? liveMatchStats.team2Score;
+  const displayScoreA = selectedMatch?.teamA.score ?? liveMatchStats.team1Score;
+  const displayScoreB = selectedMatch?.teamB.score ?? liveMatchStats.team2Score;
 
   useEffect(() => {
     if (!selectedMatch || selectedMatch.status !== 'live') return;
