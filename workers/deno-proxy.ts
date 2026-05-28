@@ -119,7 +119,7 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   // GET /api/live-matches?game=LOL
-  // 返回指定游戏各平台房间的实时状态（自动发现B站房间）
+  // 返回指定游戏 B站 房间的实时状态（虎牙/斗鱼硬编码房间不可靠，已排除）
   if (path === '/api/live-matches') {
     const game = url.searchParams.get('game') || '';
     const matches = await getRoomMap();
@@ -127,14 +127,14 @@ async function handleRequest(req: Request): Promise<Response> {
 
     for (const [gameId, rooms] of Object.entries(matches)) {
       if (game && gameId !== game) continue;
-      for (const [platform, roomId] of Object.entries(rooms)) {
-        if (!roomId) continue;
-        try {
-          const status = await checkRoomLive(String(platform), String(roomId));
-          results.push({ game: gameId, platform, roomId, ...status });
-        } catch {
-          results.push({ game: gameId, platform, roomId, isLive: false, title: null, viewers: 0 });
-        }
+      // 只检查 B站 房间
+      const bilibiliId = (rooms as Record<string, string>).bilibili;
+      if (!bilibiliId) continue;
+      try {
+        const status = await checkRoomLive('bilibili', bilibiliId);
+        results.push({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status });
+      } catch {
+        results.push({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 });
       }
     }
     return json(results);

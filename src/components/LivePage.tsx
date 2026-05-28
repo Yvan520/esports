@@ -51,10 +51,13 @@ export default function LivePage({ onBack }: LivePageProps) {
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    fetchLiveMatches().then(live => {
+    const load = () => fetchLiveMatches().then(live => {
       setAllMatches(live);
       setDataLoading(false);
     });
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
   }, []);
 
   const liveMatches = allMatches.filter(m => m.status === 'live');

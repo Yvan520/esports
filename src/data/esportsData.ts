@@ -472,21 +472,37 @@ export const STANDINGS: Team[] = [
 // 从 Deno proxy 获取实时比赛数据
 const PROXY_URL = 'https://healthy-mustang-32.yvan520.deno.net';
 
+// 支持中英文队伍名的 vs 匹配
+function extractTeams(title: string): [string, string] | null {
+  // 英文: "JDG vs BLG", "G2 Esports 3-2 LEV"
+  const en = title.match(/([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)\s*(?:vs|VS|v)\s*([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)/);
+  if (en) return [en[1].trim(), en[2].trim()];
+  // 中文: "JDG vs BLG", "TES 大战 WBG"
+  const zh = title.match(/([\u4e00-\u9fa5A-Za-z0-9]{2,8})\s*(?:vs|[Vv][Ss]|大战|对阵|对决)\s*([\u4e00-\u9fa5A-Za-z0-9]{2,8})/);
+  if (zh) return [zh[1].trim(), zh[2].trim()];
+  return null;
+}
+
+// 只保留 B站 房间（自动发现），排除硬编码的虎牙/斗鱼
+function isBilibiliOnly(room: any): boolean {
+  return room.platform === 'bilibili';
+}
+
 export async function fetchLiveMatches(): Promise<Match[]> {
   try {
     const res = await fetch(`${PROXY_URL}/api/live-matches`);
     if (!res.ok) throw new Error('Failed to fetch');
     const rooms: any[] = await res.json();
 
-    // 按 game 分组，取每个游戏中第一个 live 的房间
+    // 只取 B站 live 房间，按 game 去重（每个游戏一个）
     const liveByGame = new Map<string, any>();
     for (const room of rooms) {
-      if (room.isLive && !liveByGame.has(room.game)) {
+      if (room.isLive && isBilibiliOnly(room) && !liveByGame.has(room.game)) {
         liveByGame.set(room.game, room);
       }
     }
 
-    if (liveByGame.size === 0) return MATCHES; // fallback
+    if (liveByGame.size === 0) return MATCHES;
 
     const liveMatches: Match[] = [];
     let idCounter = 1000;
@@ -495,41 +511,47 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       const gameInfo = GAMES.find(g => g.id === gameId);
       if (!gameInfo) continue;
 
-      // Parse title like "LPL 2026夏季赛 JDG vs BLG" or use raw title
-      const title = room.title || `${gameInfo.name} 直播中`;
+      const title = room.title || '';
       const viewers = room.viewers || 0;
+      const teams = extractTeams(title);
 
-      // Try to extract team names from title
-      let teamA = 'Team A';
-      let teamB = 'Team B';
-      const vsMatch = title.match(/([A-Za-z0-9]{2,8})\s*v[vs\.]\s*([A-Za-z0-9]{2,8})/);
-      if (vsMatch) {
-        teamA = vsMatch[1];
-        teamB = vsMatch[2];
+      if (teams) {
+        liveMatches.push({
+          id: `live-${idCounter++}`,
+          game: gameId as GameType,
+          tournament: `${gameInfo.name}`,
+          stage: 'B站直播',
+          teamA: { name: teams[0], shortName: teams[0], logo: gameInfo.emoji },
+          teamB: { name: teams[1], shortName: teams[1], logo: gameInfo.emoji },
+          status: 'live',
+          startTime: '直播中',
+          viewers: viewers || undefined,
+          bestOf: 1,
+        });
+      } else {
+        // 解析不出队伍名的，显示房间原始标题
+        liveMatches.push({
+          id: `live-${idCounter++}`,
+          game: gameId as GameType,
+          tournament: `${gameInfo.name}`,
+          stage: 'B站直播',
+          teamA: { name: title || `${gameInfo.name} 直播中`, shortName: title ? title.slice(0, 16) : gameInfo.name, logo: gameInfo.emoji },
+          teamB: { name: 'B站直播间', shortName: '直播中', logo: '📺' },
+          status: 'live',
+          startTime: '直播中',
+          viewers: viewers || undefined,
+          bestOf: 1,
+        });
       }
-
-      liveMatches.push({
-        id: `live-${idCounter++}`,
-        game: gameId as GameType,
-        tournament: `${gameInfo.name} Esports`,
-        stage: room.platform === 'bilibili' ? 'B站直播' : room.platform === 'huya' ? '虎牙直播' : '斗鱼直播',
-        teamA: { name: teamA, shortName: teamA, logo: gameInfo.emoji },
-        teamB: { name: teamB, shortName: teamB, logo: gameInfo.emoji },
-        status: 'live',
-        startTime: '直播中',
-        viewers: viewers || undefined,
-        bestOf: 1,
-      });
     }
 
     if (liveMatches.length > 0) {
-      // Merge with upcoming/finished from static data
       const staticUpcoming = MATCHES.filter(m => m.status !== 'live');
       return [...liveMatches, ...staticUpcoming];
     }
     return MATCHES;
   } catch {
-    return MATCHES; // fallback to static data
+    return MATCHES;
   }
 }
 

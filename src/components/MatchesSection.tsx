@@ -12,7 +12,10 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
   const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
 
   useEffect(() => {
-    fetchLiveMatches().then(setAllMatches).catch(() => {});
+    const load = () => fetchLiveMatches().then(setAllMatches).catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
   }, []);
 
   const filtered = allMatches.filter(m => {

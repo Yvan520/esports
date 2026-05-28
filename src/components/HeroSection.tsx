@@ -21,18 +21,17 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
   ]);
 
   useEffect(() => {
-    fetchLiveMatches().then(all => {
-      const live = all.filter((r: any) => r.isLive);
-      const upcoming = all.filter((r: any) => !r.isLive);
+    const load = () => fetchLiveMatches().then(all => {
+      const live = all.filter((r: any) => r.status === 'live');
+      const upcoming = all.filter((r: any) => r.status === 'upcoming');
 
       const newHighlights = live.slice(0, 3).map(r => {
         const game = GAMES.find(g => g.id === r.game);
-        const m = r.match || {};
         return {
           game: r.game,
           badge: '🔴 LIVE',
-          title: r.title?.split('】')[0]?.replace('【', '') || m.tournament || r.game,
-          match: m.teamA?.shortName && m.teamB?.shortName ? `${m.teamA.shortName} vs ${m.teamB.shortName}` : r.title || '直播中',
+          title: r.tournament || r.game,
+          match: `${r.teamA.shortName} vs ${r.teamB.shortName}`,
           viewers: r.viewers ? `${(r.viewers / 10000).toFixed(0)}万在线` : '直播中',
           accent: game?.color || '#6366f1',
         };
@@ -41,13 +40,12 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
       if (newHighlights.length < 3) {
         upcoming.slice(0, 3 - newHighlights.length).forEach(r => {
           const game = GAMES.find(g => g.id === r.game);
-          const m = r.match || {};
           newHighlights.push({
             game: r.game,
             badge: '⏰ 即将开始',
-            title: r.title?.split('】')[0]?.replace('【', '') || m.tournament || r.game,
-            match: m.teamA?.shortName && m.teamB?.shortName ? `${m.teamA.shortName} vs ${m.teamB.shortName}` : r.title || '即将开始',
-            viewers: m.startTime || '即将开始',
+            title: r.tournament || r.game,
+            match: `${r.teamA.shortName} vs ${r.teamB.shortName}`,
+            viewers: r.startTime || '即将开始',
             accent: game?.color || '#6366f1',
           });
         });
@@ -57,15 +55,17 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
         setHighlights(newHighlights);
       }
 
-      const totalViewers = live.reduce((sum, r) => sum + (r.viewers || 0), 0);
-      const allGamesCount = live.length + upcoming.length;
+      const totalViewers = live.reduce((sum: number, r: any) => sum + (r.viewers || 0), 0);
       setStats([
         { label: '正在进行', value: String(live.length), unit: '场比赛' },
-        { label: '今日赛程', value: String(allGamesCount), unit: '场对决' },
+        { label: '今日赛程', value: String(all.length), unit: '场对决' },
         { label: '在线观众', value: totalViewers >= 10000 ? String(Math.round(totalViewers / 10000)) : String(totalViewers || '0'), unit: totalViewers >= 10000 ? '万人次' : '人' },
         { label: '覆盖赛事', value: String(TOURNAMENTS.length), unit: '顶级赛事' },
       ]);
     }).catch(() => {});
+    load();
+    const timer = setInterval(load, 60000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
