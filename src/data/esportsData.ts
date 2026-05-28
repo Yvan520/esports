@@ -586,5 +586,11 @@ export const NEWS: News[] = [
   { id: "n28", title: "水鬼传说再现！LGD 3-2 WBG爆冷", summary: "LGD在骑士之路中以3-2击败WBG，小虎时隔2117天再次无缘季后赛，WBG跌入涅槃组。", game: "LOL", date: "2026-05-25", tag: "赛事速报", image: "🌊", slug: "lpl-lgd-wbg-upset" },
   { id: "n29", title: "TT 3-0横扫iG：骑士之路最大冷门", summary: "涅槃组TT战队以3-0横扫登峰组iG，创下骑士之路最大冷门，iG惨遭横扫俯冲涅槃组。", game: "LOL", date: "2026-05-24", tag: "赛事速报", image: "💥", slug: "lpl-tt-ig-sweep" },
   { id: "n30", title: "LPL第二赛段淘汰赛对阵解析：BLG领衔四强争霸", summary: "LPL第二赛段淘汰赛将于5月29日打响，BLG、JDG、TES、AL四支登峰组强队将争夺冠军。", game: "LOL", date: "2026-05-27", tag: "赛事直播", image: "🏅", slug: "lpl-playoffs-stage-2-preview" },
+  { id: "n31", title: "PARIVISION加冕DreamLeague S29冠军，东欧新王崛起", summary: "PARIVISION在DreamLeague Season 29决赛中以3-1击败BetBoom Team，RAMZES666宝刀不老，用统治级表现夺得2026年DOTA2首个顶级赛事冠军。", game: "DOTA2", date: "2026-05-06", tag: "赛事速报", image: "🏆", slug: "dota2-dreamleague-s29" },
+  { id: "n32", title: "BetBoom Team横扫Aurora夺得PGL Wallachia S8冠军", summary: "BetBoom Team在PGL Wallachia Season 8决赛中以3-0完胜Aurora Gaming，gpk以MVP级表现证明了自己世界顶级中单的实力。", game: "DOTA2", date: "2026-04-20", tag: "赛事速报", image: "💥", slug: "dota2-pgl-wallachia-s8" },
+  { id: "n33", title: "Made in Thailand夺得PGS 4冠军，泰国战队首捧PUBG全球赛事奖杯", summary: "Made in Thailand在PGS 4决赛中力压群雄夺冠，为泰国电竞书写了历史性的一页。17Gaming获得第四名。", game: "PUBG", date: "2026-05-20", tag: "赛事速报", image: "🇹🇭", slug: "pubg-pgs-4" },
+  { id: "n34", title: "PGS Circuit 2激战正酣：PUBG电竞全球化新篇章", summary: "PUBG Esports 2026赛季PGS Circuit 2赛事正在进行，24支全球顶尖战队争夺PGC 2026积分，NAVI、FaZe Clan和17Gaming等豪门悉数出战。", game: "PUBG", date: "2026-05-15", tag: "行业资讯", image: "🌍", slug: "pubg-pgs-circuit-2" },
+  { id: "n35", title: "KSG登顶2026 KPL春季赛，新王加冕改写王者荣耀电竞格局", summary: "苏州KSG在2026年KPL春季赛总决赛中以4:2击败对手，夺得队史首座KPL冠军奖杯。年轻战队的崛起宣告了KPL新时代的到来。", game: "HONOR", date: "2026-04-26", tag: "赛事速报", image: "👑", slug: "kpl-spring-2026-ksg" },
+  { id: "n36", title: "重庆狼队再夺挑战者杯冠军，王者荣耀电竞豪门续写传奇", summary: "重庆狼队在2026年王者荣耀挑战者杯决赛中以4:1击败对手，Fly选手的总决赛表现堪称完美，传奇继续。", game: "HONOR", date: "2026-05-10", tag: "赛事速报", image: "🐺", slug: "honor-wolves-challenger-cup" },
 ];
 
