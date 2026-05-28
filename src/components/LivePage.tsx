@@ -13,7 +13,7 @@ import {
   Send,
   Settings,
 } from "lucide-react";
-import { GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
+import { MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
 import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
@@ -48,7 +48,7 @@ const BOT_CHAT_TEMPLATES = [
 ];
 
 export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
-  const [allMatches, setAllMatches] = useState<Match[]>([]);
+  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [initialSelectionDone, setInitialSelectionDone] = useState(false);
@@ -57,7 +57,7 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
     const load = () => fetchLiveMatches().then(live => {
       setAllMatches(live);
       setDataLoading(false);
-    });
+    }).catch(() => setDataLoading(false));
     load();
     const timer = setInterval(load, 30000);
     return () => clearInterval(timer);
@@ -294,17 +294,6 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
       setChatMessages((prev) => [...prev, { id: Date.now() + 1, user: "电竞智囊团", msg: `@我 (You) ${replies[Math.floor(Math.random() * replies.length)]}`, vip: false, team: "Neutral" }]);
     }, 1200);
   };
-
-  if (dataLoading || !selectedMatch) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-10 h-10 border-2 border-cyan-400 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-slate-400 text-sm">正在加载直播数据...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-cyan-500 selection:text-slate-950">
