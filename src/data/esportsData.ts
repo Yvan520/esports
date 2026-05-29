@@ -1,4 +1,4 @@
-export type GameType = 'LOL' | 'CS2' | 'DOTA2' | 'VALORANT' | 'PUBG' | 'HONOR';
+export type GameType = 'LOL' | 'CS2' | 'DOTA2' | 'VALORANT' | 'PUBG' | 'HONOR' | 'DELTA' | 'AB';
 
 export interface Team {
   id: string;
@@ -62,6 +62,8 @@ export const GAMES: { id: GameType; name: string; color: string; bgColor: string
   { id: 'VALORANT', name: 'VALORANT', color: '#FF4655', bgColor: 'rgba(255,70,85,0.15)', emoji: '🔫' },
   { id: 'PUBG', name: 'PUBG', color: '#F2A900', bgColor: 'rgba(242,169,0,0.15)', emoji: '🪖' },
   { id: 'HONOR', name: '王者荣耀', color: '#00D4FF', bgColor: 'rgba(0,212,255,0.15)', emoji: '👑' },
+  { id: 'DELTA', name: '三角洲行动', color: '#CD7F32', bgColor: 'rgba(205,127,50,0.15)', emoji: '🦅' },
+  { id: 'AB', name: '暗区突围', color: '#2E8B57', bgColor: 'rgba(46,139,87,0.15)', emoji: '🎒' },
 ];
 
 export const MATCHES: Match[] = [
@@ -235,6 +237,29 @@ export const MATCHES: Match[] = [
     startTime: '前天 19:00',
     bestOf: 3,
   },
+  {
+    id: 'm16',
+    game: 'DELTA',
+    tournament: '烽火职业联赛',
+    stage: '夏季赛 第1周',
+    teamA: { name: 'TES战队', shortName: 'TES', logo: '⚡', score: 2 },
+    teamB: { name: 'TEC战队', shortName: 'TEC', logo: '🛡️', score: 0 },
+    status: 'live',
+    startTime: '今日 18:00',
+    viewers: 356000,
+    bestOf: 3,
+  },
+  {
+    id: 'm17',
+    game: 'AB',
+    tournament: '暗区大师赛',
+    stage: '海选赛 第3周',
+    teamA: { name: '臭宝队', shortName: '臭宝', logo: '💎' },
+    teamB: { name: '天霸队', shortName: '天霸', logo: '⚡' },
+    status: 'upcoming',
+    startTime: '今日 20:00',
+    bestOf: 1,
+  },
 ];
 
 export const TOURNAMENTS: Tournament[] = [
@@ -406,6 +431,30 @@ export const TOURNAMENTS: Tournament[] = [
     region: '全球',
     teams: 12,
   },
+  {
+    id: 't15',
+    name: '三角洲行动烽火职业联赛',
+    game: 'DELTA',
+    logo: '🦅',
+    prizePool: '¥500万',
+    startDate: '2026-03-25',
+    endDate: '2026-08-30',
+    status: 'ongoing',
+    region: '中国',
+    teams: 12,
+  },
+  {
+    id: 't16',
+    name: '暗区大师赛2026',
+    game: 'AB',
+    logo: '🎒',
+    prizePool: '¥350,000',
+    startDate: '2026-05-08',
+    endDate: '2026-07-18',
+    status: 'ongoing',
+    region: '中国',
+    teams: 30,
+  },
 ];
 
 export const STANDINGS: Team[] = [
@@ -467,6 +516,14 @@ export const STANDINGS: Team[] = [
   { id: 's50', name: 'DYG', shortName: 'DYG', logo: '💙', region: '中国', wins: 19, losses: 13, winRate: 59.4, points: 38, game: 'HONOR' },
   { id: 's51', name: '佛山GK', shortName: 'GK', logo: '🌊', region: '中国', wins: 15, losses: 17, winRate: 46.9, points: 30, game: 'HONOR' },
   { id: 's52', name: '北京WB', shortName: 'WB', logo: '🦊', region: '中国', wins: 16, losses: 16, winRate: 50.0, points: 32, game: 'HONOR' },
+  // DELTA additional
+  { id: 's53', name: 'TES战队', shortName: 'TES', logo: '⚡', region: '中国', wins: 18, losses: 4, winRate: 81.8, points: 36, game: 'DELTA' },
+  { id: 's54', name: 'TEC战队', shortName: 'TEC', logo: '🛡️', region: '中国', wins: 16, losses: 6, winRate: 72.7, points: 32, game: 'DELTA' },
+  { id: 's55', name: 'JDG战队', shortName: 'JDG', logo: '🐉', region: '中国', wins: 14, losses: 8, winRate: 63.6, points: 28, game: 'DELTA' },
+  { id: 's56', name: 'NOVA战队', shortName: 'NOVA', logo: '🌟', region: '中国', wins: 12, losses: 10, winRate: 54.5, points: 24, game: 'DELTA' },
+  // AB additional
+  { id: 's57', name: '臭宝队', shortName: '臭宝', logo: '💎', region: '中国', wins: 22, losses: 4, winRate: 84.6, points: 44, game: 'AB' },
+  { id: 's58', name: '天霸队', shortName: '天霸', logo: '⚡', region: '中国', wins: 19, losses: 7, winRate: 73.1, points: 38, game: 'AB' },
 ];
 
 // 从 Deno proxy 获取实时比赛数据
@@ -592,5 +649,9 @@ export const NEWS: News[] = [
   { id: "n34", title: "PGS Circuit 2激战正酣：PUBG电竞全球化新篇章", summary: "PUBG Esports 2026赛季PGS Circuit 2赛事正在进行，24支全球顶尖战队争夺PGC 2026积分，NAVI、FaZe Clan和17Gaming等豪门悉数出战。", game: "PUBG", date: "2026-05-15", tag: "行业资讯", image: "🌍", slug: "pubg-pgs-circuit-2" },
   { id: "n35", title: "KSG登顶2026 KPL春季赛，新王加冕改写王者荣耀电竞格局", summary: "苏州KSG在2026年KPL春季赛总决赛中以4:2击败对手，夺得队史首座KPL冠军奖杯。年轻战队的崛起宣告了KPL新时代的到来。", game: "HONOR", date: "2026-04-26", tag: "赛事速报", image: "👑", slug: "kpl-spring-2026-ksg" },
   { id: "n36", title: "重庆狼队再夺挑战者杯冠军，王者荣耀电竞豪门续写传奇", summary: "重庆狼队在2026年王者荣耀挑战者杯决赛中以4:1击败对手，Fly选手的总决赛表现堪称完美，传奇继续。", game: "HONOR", date: "2026-05-10", tag: "赛事速报", image: "🐺", slug: "honor-wolves-challenger-cup" },
+  { id: "n37", title: "TES问鼎三角洲行动烽火职业联赛春季赛总冠军", summary: "TES在五棵松体育馆七局鏖战中脱颖而出，夺得首个烽火职业联赛冠军。white以场均淘汰第一的数据斩获FMVP。", game: "DELTA", date: "2026-05-16", tag: "赛事速报", image: "🦅", slug: "delta-force-spring-final" },
+  { id: "n38", title: "5000万DAU之后：三角洲行动电竞的进化之路", summary: "从质疑到爆红，三角洲行动用18个月拿下5000万DAU，再以完备的职业赛事体系回应「搜打撤能不能电竞」的质疑。", game: "DELTA", date: "2026-05-10", tag: "行业资讯", image: "🔥", slug: "delta-force-esports-launch" },
+  { id: "n39", title: "2026暗区大师赛全面升级：35万奖金池点燃战术博弈", summary: "2026暗区大师赛于5月8日开赛，总奖金35万。全新赛点制、价值保底机制让战术撤离电竞达到新高度。", game: "AB", date: "2026-05-08", tag: "赛事速报", image: "🎒", slug: "arena-breakout-masters-2026" },
+  { id: "n40", title: "从大金杯到暗区大师赛：战术撤离电竞在中国的崛起", summary: "暗区突围赛事体系从2022年起步，到2026年已发展出覆盖职业、主播和全民赛事的完整生态。", game: "AB", date: "2026-05-12", tag: "行业资讯", image: "🔥", slug: "arena-breakout-esports-ecosystem" },
 ];
 
