@@ -44,18 +44,20 @@ export default {
     if (path === '/api/live-matches') {
       const game = url.searchParams.get('game') || '';
       const matches = await getRoomMap();
-      const results = [];
+      const tasks = [];
       for (const [gameId, rooms] of Object.entries(matches)) {
         if (game && gameId !== game) continue;
         const bilibiliId = rooms.bilibili;
         if (!bilibiliId) continue;
-        try {
-          const status = await checkRoomLive('bilibili', bilibiliId);
-          results.push({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status });
-        } catch {
-          results.push({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 });
-        }
+        tasks.push(
+          checkRoomLive('bilibili', bilibiliId).then(status =>
+            ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status })
+          ).catch(() =>
+            ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 })
+          )
+        );
       }
+      const results = await Promise.all(tasks);
       return json(results);
     }
 
@@ -72,8 +74,8 @@ function corsHeaders() {
   return { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Cache-Control': 'no-cache' };
 }
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...corsHeaders() } });
+function json(data, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json', ...corsHeaders(), ...extraHeaders } });
 }
 
 // ============ B站房间自动发现 ============

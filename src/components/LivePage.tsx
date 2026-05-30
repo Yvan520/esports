@@ -13,7 +13,7 @@ import {
   Send,
   Settings,
 } from "lucide-react";
-import { MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
+import { NON_LIVE_MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
 import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
@@ -48,7 +48,7 @@ const BOT_CHAT_TEMPLATES = [
 ];
 
 export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
-  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+  const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
   const [dataLoading, setDataLoading] = useState(true);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [initialSelectionDone, setInitialSelectionDone] = useState(false);

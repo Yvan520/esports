@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MATCHES, GAMES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
+import { NON_LIVE_MATCHES, GAMES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
 
 interface LiveSectionProps {
   activeGame: GameType | 'ALL';
@@ -12,7 +12,7 @@ function formatViewers(n: number): string {
 }
 
 export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionProps) {
-  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+  const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
 
   useEffect(() => {
     const load = () => fetchLiveMatches().then(setAllMatches).catch(() => {});
@@ -53,7 +53,7 @@ export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionPro
   );
 }
 
-function LiveMatchCard({ match, featured, onWatch }: { match: typeof MATCHES[0]; featured: boolean; onWatch: (matchId: string) => void }) {
+function LiveMatchCard({ match, featured, onWatch }: { match: Match; featured: boolean; onWatch: (matchId: string) => void }) {
   const game = GAMES.find(g => g.id === match.game);
 
   return (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MATCHES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
+import { NON_LIVE_MATCHES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
 import MatchCard from './MatchCard';
 
 interface MatchesSectionProps {
@@ -9,7 +9,7 @@ interface MatchesSectionProps {
 
 export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
-  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
+  const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
 
   useEffect(() => {
     const load = () => fetchLiveMatches().then(setAllMatches).catch(() => {});

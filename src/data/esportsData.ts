@@ -547,13 +547,18 @@ function isBilibiliOnly(room: any): boolean {
   return room.platform === 'bilibili';
 }
 
+export const NON_LIVE_MATCHES: Match[] = MATCHES.filter(m => m.status !== 'live');
+
+function staticNonLiveMatches(): Match[] {
+  return NON_LIVE_MATCHES;
+}
+
 export async function fetchLiveMatches(): Promise<Match[]> {
   try {
     const res = await fetch(`${PROXY_URL}/api/live-matches`);
     if (!res.ok) throw new Error('Failed to fetch');
     const rooms: any[] = await res.json();
 
-    // 只取 B站 live 房间，按 game 去重（每个游戏一个）
     const liveByGame = new Map<string, any>();
     for (const room of rooms) {
       if (room.isLive && isBilibiliOnly(room) && !liveByGame.has(room.game)) {
@@ -561,7 +566,7 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       }
     }
 
-    if (liveByGame.size === 0) return MATCHES;
+    if (liveByGame.size === 0) return staticNonLiveMatches();
 
     const liveMatches: Match[] = [];
 
@@ -588,7 +593,6 @@ export async function fetchLiveMatches(): Promise<Match[]> {
           bestOf: 1,
         });
       } else {
-        // 解析不出队伍名的，显示房间原始标题
         liveMatches.push({
           id: stableId,
           game: gameId as GameType,
@@ -605,12 +609,11 @@ export async function fetchLiveMatches(): Promise<Match[]> {
     }
 
     if (liveMatches.length > 0) {
-      const staticUpcoming = MATCHES.filter(m => m.status !== 'live');
-      return [...liveMatches, ...staticUpcoming];
+      return [...liveMatches, ...staticNonLiveMatches()];
     }
-    return MATCHES;
+    return staticNonLiveMatches();
   } catch {
-    return MATCHES;
+    return staticNonLiveMatches();
   }
 }
 
