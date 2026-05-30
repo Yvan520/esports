@@ -529,7 +529,7 @@ export const STANDINGS: Team[] = [
 // Proxy (Cloudflare Worker 或 Deno Deploy)
 // 部署 Cloudflare Worker: 将 workers/cloudflare-worker.mjs 粘贴到 Cloudflare Dashboard
 // 部署后把下面 URL 替换为你的 worker 域名
-const PROXY_URL = 'https://healthy-mustang-32.yvan520.deno.net';
+const PROXY_URL = 'https://dry-tooth-2d36.haoyunmeimei520.workers.dev';
 
 // 支持中英文队伍名的 vs 匹配
 function extractTeams(title: string): [string, string] | null {
