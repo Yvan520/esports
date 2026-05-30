@@ -64,9 +64,10 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
   }, []);
 
   const liveMatches = allMatches.filter(m => m.status === 'live');
+  const hasLive = liveMatches.length > 0;
   const selectedMatch = selectedMatchId
-    ? allMatches.find(m => m.id === selectedMatchId) ?? liveMatches[0] ?? allMatches[0] ?? null
-    : liveMatches[0] ?? allMatches[0] ?? null;
+    ? allMatches.find(m => m.id === selectedMatchId) ?? null
+    : null;
 
   // Auto-select on initial load: use initialMatchId if provided, else first live match
   useEffect(() => {
@@ -74,11 +75,13 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
     if (initialMatchId && allMatches.some(m => m.id === initialMatchId)) {
       setSelectedMatchId(initialMatchId);
       setInitialSelectionDone(true);
-    } else if (liveMatches.length > 0) {
+    } else if (hasLive) {
       setSelectedMatchId(liveMatches[0].id);
       setInitialSelectionDone(true);
+    } else {
+      setInitialSelectionDone(true);
     }
-  }, [initialSelectionDone, initialMatchId, liveMatches, allMatches]);
+  }, [initialSelectionDone, initialMatchId, liveMatches, allMatches, hasLive]);
 
   const [notification, setNotification] = useState<string | null>("欢迎来到赛事直播大厅！参与实时预测即可获得竞技积分。");
 
@@ -334,6 +337,7 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {selectedMatch ? (<>
             {/* Left: Stream + Events + Match List */}
             <div className="lg:col-span-2 space-y-6">
               {/* Streaming Video Player */}
@@ -706,6 +710,13 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
                 </form>
               </div>
             </div>
+            </>) : (
+              <div className="lg:col-span-3 flex flex-col items-center justify-center py-20">
+                <Tv className="h-16 w-16 text-slate-700 mb-4" />
+                <h3 className="text-lg font-bold text-slate-300 mb-2">暂无直播</h3>
+                <p className="text-sm text-slate-500">当前没有正在进行的比赛，请查看其他即将开始的赛事</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
