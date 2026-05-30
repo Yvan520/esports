@@ -526,7 +526,9 @@ export const STANDINGS: Team[] = [
   { id: 's58', name: '天霸队', shortName: '天霸', logo: '⚡', region: '中国', wins: 19, losses: 7, winRate: 73.1, points: 38, game: 'AB' },
 ];
 
-// 从 Deno proxy 获取实时比赛数据
+// Proxy (Cloudflare Worker 或 Deno Deploy)
+// 部署 Cloudflare Worker: 将 workers/cloudflare-worker.mjs 粘贴到 Cloudflare Dashboard
+// 部署后把下面 URL 替换为你的 worker 域名
 const PROXY_URL = 'https://healthy-mustang-32.yvan520.deno.net';
 
 // 支持中英文队伍名的 vs 匹配
