@@ -533,11 +533,10 @@ const PROXY_URL = 'https://dry-tooth-2d36.haoyunmeimei520.workers.dev';
 
 // 支持中英文队伍名的 vs 匹配
 function extractTeams(title: string): [string, string] | null {
-  // 英文: "JDG vs BLG", "G2 Esports 3-2 LEV"
-  const en = title.match(/([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)\s*(?:vs|VS|v)\s*([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)/);
+  const clean = title.replace(/^[【\[\(（].*?[】\]\)）]\s*/, '');
+  const en = clean.match(/([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)\s*(?:vs|VS|v)\s*([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)/);
   if (en) return [en[1].trim(), en[2].trim()];
-  // 中文: "JDG vs BLG", "TES 大战 WBG"
-  const zh = title.match(/([\u4e00-\u9fa5A-Za-z0-9]{2,8})\s*(?:vs|[Vv][Ss]|大战|对阵|对决)\s*([\u4e00-\u9fa5A-Za-z0-9]{2,8})/);
+  const zh = clean.match(/([\u4e00-\u9fa5A-Za-z0-9]{2,8})\s*(?:vs|[Vv][Ss]|大战|对阵|对决)\s*([\u4e00-\u9fa5A-Za-z0-9]{2,8})/);
   if (zh) return [zh[1].trim(), zh[2].trim()];
   return null;
 }

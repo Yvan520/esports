@@ -1,9 +1,9 @@
-// Cloudflare Worker - 直播流地址代理
+// Cloudflare Worker - 直播流地址代理 + 房间自动发现
 // 部署: Cloudflare Dashboard → Workers & Pages → Create Worker → 粘贴此代码 → 部署
 // 部署后记下域名如: https://your-worker.xxx.workers.dev
 // 在 src/data/esportsData.ts 中 PROXY_URL 更新为此域名
 
-const CACHE_TTL = 60_000;
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
 
 export default {
   async fetch(request, env, ctx) {
@@ -34,33 +34,21 @@ export default {
       }
     }
 
-    // GET /api/rooms - B站房间自动发现
+    // GET /api/rooms - 房间ID映射
     if (path === '/api/rooms') {
-      const rooms = await getRoomMap();
+      const rooms = await getRoomMap(ctx);
       return json(rooms);
     }
 
     // GET /api/live-matches?game=LOL
     if (path === '/api/live-matches') {
       const game = url.searchParams.get('game') || '';
-      const matches = await getRoomMap();
-      const tasks = [];
-      for (const [gameId, rooms] of Object.entries(matches)) {
-        if (game && gameId !== game) continue;
-        const bilibiliIds = rooms.bilibili;
-        if (!bilibiliIds || bilibiliIds.length === 0) continue;
-        const ids = Array.isArray(bilibiliIds) ? bilibiliIds : [bilibiliIds];
-        for (const bilibiliId of ids) {
-          tasks.push(
-            checkRoomLive('bilibili', bilibiliId).then(status =>
-              ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status })
-            ).catch(() =>
-              ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 })
-            )
-          );
-        }
+      const allRooms = await getLiveRooms(ctx);
+      const results = [];
+      for (const r of allRooms) {
+        if (game && r.game !== game) continue;
+        results.push(r);
       }
-      const results = await Promise.all(tasks);
       return json(results);
     }
 
@@ -84,9 +72,14 @@ function json(data, status = 200, extraHeaders = {}) {
 // ============ B站房间自动发现 ============
 
 const FALLBACK_BILIBILI = {
-  LOL: '7734200', VALORANT: '22908869', CS2: '21495949',
-  DOTA2: '21495945', PUBG: '11218604', HONOR: '21144080',
-  DELTA: '31250975', AB: '23927284',
+  LOL:    { roomId: '7734200',  game: 'LOL' },
+  VALORANT: { roomId: '22908869', game: 'VALORANT' },
+  CS2:    { roomId: '21495949', game: 'CS2' },
+  DOTA2:  { roomId: '21495945', game: 'DOTA2' },
+  PUBG:   { roomId: '11218604', game: 'PUBG' },
+  HONOR:  { roomId: '21144080', game: 'HONOR' },
+  DELTA:  { roomId: '31250975', game: 'DELTA' },
+  AB:     { roomId: '23927284', game: 'AB' },
 };
 
 const GAME_KEYWORDS = {
@@ -95,53 +88,89 @@ const GAME_KEYWORDS = {
   DELTA: '三角洲行动赛事', AB: '暗区突围赛事',
 };
 
-let discoveredCache = null;
-const DISCOVER_TTL = 86400_000;
+let liveCache = null;
+let refreshing = null;
+const LIVE_CACHE_TTL = 120_000;
 
-async function discoverBilibiliRooms() {
-  const result = {};
+async function getLiveRooms(ctx) {
+  // Cache hit
+  if (liveCache && Date.now() - liveCache.ts < LIVE_CACHE_TTL) {
+    return liveCache.data;
+  }
+  // Stale cache: return old data, refresh in background
+  if (liveCache) {
+    backgroundRefresh(ctx);
+    return liveCache.data;
+  }
+  // Cold start: return fallback immediately, refresh in background
+  const fallback = buildFallbackRooms(true);
+  liveCache = { data: fallback, ts: Date.now() };
+  backgroundRefresh(ctx);
+  return fallback;
+}
+
+function backgroundRefresh(ctx) {
+  if (refreshing) return;
+  refreshing = refreshFromBilibili();
+  ctx.waitUntil(refreshing.finally(() => { refreshing = null; }));
+}
+
+function buildFallbackRooms(isLive) {
+  const results = [];
+  for (const [game, fb] of Object.entries(FALLBACK_BILIBILI)) {
+    results.push({ game, platform: 'bilibili', roomId: fb.roomId, isLive, title: null, viewers: 0, uname: null });
+  }
+  return results;
+}
+
+async function refreshFromBilibili() {
+  const results = [];
   for (const [game, keyword] of Object.entries(GAME_KEYWORDS)) {
-    const ids = [];
     try {
       const res = await fetch(
         `https://api.bilibili.com/x/web-interface/search/type?search_type=live_room&keyword=${encodeURIComponent(keyword)}`,
-        { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } }
+        { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/', 'Accept': 'application/json, text/plain, */*' } }
       );
       const data = await res.json();
       const rooms = data?.data?.result;
       if (rooms && rooms.length > 0) {
         rooms.sort((a, b) => (b.atten || 0) - (a.atten || 0));
-        for (const r of rooms.slice(0, 5)) ids.push(String(r.roomid));
+        for (const r of rooms.slice(0, 5)) {
+          if (r.live_status === 1) {
+            results.push({
+              game,
+              platform: 'bilibili',
+              roomId: String(r.roomid),
+              isLive: true,
+              title: r.title || null,
+              viewers: r.online || 0,
+              uname: r.uname || null,
+            });
+          }
+        }
       }
     } catch {}
-    if (ids.length === 0 && FALLBACK_BILIBILI[game]) ids.push(FALLBACK_BILIBILI[game]);
-    if (ids.length > 0) result[game] = ids;
   }
-  return result;
+  if (results.length > 0) {
+    liveCache = { data: results, ts: Date.now() };
+  } else {
+    // B站 unreachable: keep existing cache or fallback with isLive:true
+    if (!liveCache) {
+      liveCache = { data: buildFallbackRooms(true), ts: Date.now() };
+    } else {
+      liveCache = { data: liveCache.data, ts: Date.now() };
+    }
+  }
 }
 
-async function getRoomMap() {
-  if (discoveredCache && Date.now() - discoveredCache.ts < DISCOVER_TTL) return discoveredCache.data;
-  const bilibiliRooms = await discoverBilibiliRooms();
-  const result = {};
-  for (const game of Object.keys(GAME_KEYWORDS)) {
-    result[game] = {};
-    if (bilibiliRooms[game]) result[game].bilibili = Array.isArray(bilibiliRooms[game]) ? bilibiliRooms[game] : [bilibiliRooms[game]];
+async function getRoomMap(ctx) {
+  const all = await getLiveRooms(ctx);
+  const map = {};
+  for (const r of all) {
+    if (!map[r.game]) map[r.game] = { bilibili: [] };
+    map[r.game].bilibili.push(r.roomId);
   }
-  discoveredCache = { data: result, ts: Date.now() };
-  return result;
-}
-
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
-
-async function checkRoomLive(platform, roomId) {
-  if (platform === 'bilibili') {
-    const res = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`, { headers: { 'User-Agent': UA, 'Accept': 'application/json, text/plain, */*', 'Referer': 'https://live.bilibili.com/' } });
-    const data = await res.json();
-    if (data.data) return { isLive: data.data.live_status === 1, title: data.data.title || null, viewers: data.data.online || 0, roomInfo: data.data };
-    return { isLive: false, title: null, viewers: 0 };
-  }
-  return { isLive: false, title: null, viewers: 0 };
+  return map;
 }
 
 // ============ 流地址解析 ============
@@ -154,7 +183,7 @@ async function getBilibiliStream(roomId, quality) {
   const realRoomId = infoData.data?.room_id || roomId;
   if (infoData.data?.live_status !== 1) return { platform: 'bilibili', roomId, isLive: false, url: null, error: '未开播' };
   const res = await fetch(`https://api.live.bilibili.com/room/v1/Room/playUrl?cid=${realRoomId}&qn=${qn}&platform=web`,
-    { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } });
+    { headers: { 'User-Agent': UA, 'Referer': 'https://live.bilibili.com/' } });
   const data = await res.json();
   if (data.code === 0 && data.data?.durl?.length > 0) {
     return { platform: 'bilibili', roomId: realRoomId, isLive: true, url: data.data.durl[0].url, urls: data.data.durl.map(d => d.url) };
