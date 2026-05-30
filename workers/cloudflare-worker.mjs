@@ -105,7 +105,7 @@ async function discoverBilibiliRooms() {
     try {
       const res = await fetch(
         `https://api.bilibili.com/x/web-interface/search/type?search_type=live_room&keyword=${encodeURIComponent(keyword)}`,
-        { headers: { 'User-Agent': 'Mozilla/5.0' } }
+        { headers: { 'User-Agent': UA, 'Referer': 'https://www.bilibili.com/' } }
       );
       const data = await res.json();
       const rooms = data?.data?.result;
@@ -132,9 +132,11 @@ async function getRoomMap() {
   return result;
 }
 
+const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+
 async function checkRoomLive(platform, roomId) {
   if (platform === 'bilibili') {
-    const res = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`);
+    const res = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`, { headers: { 'User-Agent': UA, 'Accept': 'application/json, text/plain, */*', 'Referer': 'https://live.bilibili.com/' } });
     const data = await res.json();
     if (data.data) return { isLive: data.data.live_status === 1, title: data.data.title || null, viewers: data.data.online || 0, roomInfo: data.data };
     return { isLive: false, title: null, viewers: 0 };
@@ -147,7 +149,7 @@ async function checkRoomLive(platform, roomId) {
 async function getBilibiliStream(roomId, quality) {
   const qualityMap = { 0: 10000, 1: 400, 2: 250, 3: 150, 4: 80 };
   const qn = qualityMap[quality] || 10000;
-  const infoRes = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`);
+  const infoRes = await fetch(`https://api.live.bilibili.com/room/v1/Room/get_info?room_id=${roomId}`, { headers: { 'User-Agent': UA, 'Referer': 'https://live.bilibili.com/' } });
   const infoData = await infoRes.json();
   const realRoomId = infoData.data?.room_id || roomId;
   if (infoData.data?.live_status !== 1) return { platform: 'bilibili', roomId, isLive: false, url: null, error: '未开播' };
