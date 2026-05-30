@@ -8,11 +8,15 @@ interface HeroSectionProps {
 export default function HeroSection({ onSectionChange }: HeroSectionProps) {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
-  const [highlights, setHighlights] = useState<{ game: string; badge: string; title: string; match: string; viewers: string; accent: string }[]>([]);
+  const [highlights, setHighlights] = useState([
+    { game: 'LOL', badge: '🔴 LIVE', title: 'LPL春季赛', match: 'JDG vs BLG', viewers: '123万在线', accent: '#C89B3C' },
+    { game: 'VALORANT', badge: '🔴 LIVE', title: 'VCT亚太赛', match: 'EDG vs ZETA', viewers: '85万在线', accent: '#FF4655' },
+    { game: 'CS2', badge: '⏰ 即将开始', title: 'IEM卡托维兹', match: 'NAVI vs VIT', viewers: '今晚20:00', accent: '#FF6B35' },
+  ]);
   const [stats, setStats] = useState([
-    { label: '正在进行', value: '-', unit: '场比赛' },
-    { label: '今日赛程', value: '-', unit: '场对决' },
-    { label: '在线观众', value: '-', unit: '万人次' },
+    { label: '正在进行', value: '12', unit: '场比赛' },
+    { label: '今日赛程', value: '38', unit: '场对决' },
+    { label: '在线观众', value: '890', unit: '万人次' },
     { label: '覆盖赛事', value: '60+', unit: '顶级赛事' },
   ]);
 
@@ -76,7 +80,7 @@ export default function HeroSection({ onSectionChange }: HeroSectionProps) {
     return () => clearInterval(timer);
   }, [highlights]);
 
-  const h = highlights.length > 0 ? highlights[current % highlights.length] : { game: '', badge: '⏳ 加载中', title: '', match: '加载中...', viewers: '', accent: '#6366f1' };
+  const h = highlights.length > 0 ? highlights[current % highlights.length] : highlights[0];
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden">
