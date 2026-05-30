@@ -50,7 +50,7 @@ const BOT_CHAT_TEMPLATES = [
 export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
   const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
   const [dataLoading, setDataLoading] = useState(true);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(initialMatchId || NON_LIVE_MATCHES[0]?.id || null);
   const [initialSelectionDone, setInitialSelectionDone] = useState(false);
 
   useEffect(() => {
@@ -64,24 +64,23 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
   }, []);
 
   const liveMatches = allMatches.filter(m => m.status === 'live');
-  const hasLive = liveMatches.length > 0;
   const selectedMatch = selectedMatchId
     ? allMatches.find(m => m.id === selectedMatchId) ?? null
     : null;
 
-  // Auto-select on initial load: use initialMatchId if provided, else first live match
+  // Auto-select on initial load: use initialMatchId if provided, else first match
   useEffect(() => {
     if (initialSelectionDone) return;
     if (initialMatchId && allMatches.some(m => m.id === initialMatchId)) {
       setSelectedMatchId(initialMatchId);
       setInitialSelectionDone(true);
-    } else if (hasLive) {
-      setSelectedMatchId(liveMatches[0].id);
-      setInitialSelectionDone(true);
-    } else {
+    } else if (initialMatchId) {
+      return;
+    } else if (allMatches.length > 0) {
+      setSelectedMatchId(allMatches[0].id);
       setInitialSelectionDone(true);
     }
-  }, [initialSelectionDone, initialMatchId, liveMatches, allMatches, hasLive]);
+  }, [initialSelectionDone, initialMatchId, allMatches]);
 
   const [notification, setNotification] = useState<string | null>("欢迎来到赛事直播大厅！参与实时预测即可获得竞技积分。");
 
