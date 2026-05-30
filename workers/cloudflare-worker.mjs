@@ -47,15 +47,18 @@ export default {
       const tasks = [];
       for (const [gameId, rooms] of Object.entries(matches)) {
         if (game && gameId !== game) continue;
-        const bilibiliId = rooms.bilibili;
-        if (!bilibiliId) continue;
-        tasks.push(
-          checkRoomLive('bilibili', bilibiliId).then(status =>
-            ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status })
-          ).catch(() =>
-            ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 })
-          )
-        );
+        const bilibiliIds = rooms.bilibili;
+        if (!bilibiliIds || bilibiliIds.length === 0) continue;
+        const ids = Array.isArray(bilibiliIds) ? bilibiliIds : [bilibiliIds];
+        for (const bilibiliId of ids) {
+          tasks.push(
+            checkRoomLive('bilibili', bilibiliId).then(status =>
+              ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, ...status })
+            ).catch(() =>
+              ({ game: gameId, platform: 'bilibili', roomId: bilibiliId, isLive: false, title: null, viewers: 0 })
+            )
+          );
+        }
       }
       const results = await Promise.all(tasks);
       return json(results);
@@ -98,6 +101,7 @@ const DISCOVER_TTL = 86400_000;
 async function discoverBilibiliRooms() {
   const result = {};
   for (const [game, keyword] of Object.entries(GAME_KEYWORDS)) {
+    const ids = [];
     try {
       const res = await fetch(
         `https://api.bilibili.com/x/web-interface/search/type?search_type=live_room&keyword=${encodeURIComponent(keyword)}`,
@@ -107,10 +111,11 @@ async function discoverBilibiliRooms() {
       const rooms = data?.data?.result;
       if (rooms && rooms.length > 0) {
         rooms.sort((a, b) => (b.atten || 0) - (a.atten || 0));
-        result[game] = String(rooms[0].roomid);
+        for (const r of rooms.slice(0, 5)) ids.push(String(r.roomid));
       }
     } catch {}
-    if (!result[game] && FALLBACK_BILIBILI[game]) result[game] = FALLBACK_BILIBILI[game];
+    if (ids.length === 0 && FALLBACK_BILIBILI[game]) ids.push(FALLBACK_BILIBILI[game]);
+    if (ids.length > 0) result[game] = ids;
   }
   return result;
 }
@@ -121,7 +126,7 @@ async function getRoomMap() {
   const result = {};
   for (const game of Object.keys(GAME_KEYWORDS)) {
     result[game] = {};
-    if (bilibiliRooms[game]) result[game].bilibili = bilibiliRooms[game];
+    if (bilibiliRooms[game]) result[game].bilibili = Array.isArray(bilibiliRooms[game]) ? bilibiliRooms[game] : [bilibiliRooms[game]];
   }
   discoveredCache = { data: result, ts: Date.now() };
   return result;

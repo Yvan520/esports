@@ -559,25 +559,21 @@ export async function fetchLiveMatches(): Promise<Match[]> {
     if (!res.ok) throw new Error('Failed to fetch');
     const rooms: any[] = await res.json();
 
-    const liveByGame = new Map<string, any>();
-    for (const room of rooms) {
-      if (room.isLive && isBilibiliOnly(room) && !liveByGame.has(room.game)) {
-        liveByGame.set(room.game, room);
-      }
-    }
+    const liveRooms = rooms.filter(r => r.isLive && isBilibiliOnly(r));
 
-    if (liveByGame.size === 0) return staticNonLiveMatches();
+    if (liveRooms.length === 0) return staticNonLiveMatches();
 
     const liveMatches: Match[] = [];
 
-    for (const [gameId, room] of liveByGame) {
+    for (const room of liveRooms) {
+      const gameId = room.game || 'LOL';
       const gameInfo = GAMES.find(g => g.id === gameId);
       if (!gameInfo) continue;
 
       const title = room.title || '';
       const viewers = room.viewers || 0;
       const teams = extractTeams(title);
-      const stableId = `bilibili-${gameId}`;
+      const stableId = `bilibili-${room.roomId}`;
 
       if (teams) {
         liveMatches.push({
