@@ -653,5 +653,15 @@ export const NEWS: News[] = [
   { id: "n38", title: "5000万DAU之后：三角洲行动电竞的进化之路", summary: "从质疑到爆红，三角洲行动用18个月拿下5000万DAU，再以完备的职业赛事体系回应「搜打撤能不能电竞」的质疑。", game: "DELTA", date: "2026-05-10", tag: "行业资讯", image: "🔥", slug: "delta-force-esports-launch" },
   { id: "n39", title: "2026暗区大师赛全面升级：35万奖金池点燃战术博弈", summary: "2026暗区大师赛于5月8日开赛，总奖金35万。全新赛点制、价值保底机制让战术撤离电竞达到新高度。", game: "AB", date: "2026-05-08", tag: "赛事速报", image: "🎒", slug: "arena-breakout-masters-2026" },
   { id: "n40", title: "从大金杯到暗区大师赛：战术撤离电竞在中国的崛起", summary: "暗区突围赛事体系从2022年起步，到2026年已发展出覆盖职业、主播和全民赛事的完整生态。", game: "AB", date: "2026-05-12", tag: "行业资讯", image: "🔥", slug: "arena-breakout-esports-ecosystem" },
+  { id: "n41", title: "历史首次！BLG五人全员入选最佳一阵，Knight追平MVP纪录", summary: "LPL第二赛段最佳阵容评选结果出炉，BLG创造历史成为首支全员包揽一阵的战队，Knight以全票当选MVP追平Doinb和Rookie的纪录。", game: "LOL", date: "2026-05-29", tag: "赛事速报", image: "👑", slug: "lpl-blg-all-pro-sweep" },
+  { id: "n42", title: "LPL确认不参加亚运会，LCK谁去谁免兵役？", summary: "2026年亚运会电竞项目名单公布，LOL项目没有中国大陆队参赛，LCK赛区夺冠几乎无悬念，金牌意味着免兵役引发韩网热议。", game: "LOL", date: "2026-05-29", tag: "行业资讯", image: "🏅", slug: "lpl-no-asian-games" },
+  { id: "n43", title: "IEM Cologne Major 2026开幕！Vitality冲击三连冠王朝", summary: "CS2年度最大赛事IEM Cologne Major在德国科隆正式打响，32支战队争夺125万美元奖金，Vitality若夺冠将追平Astralis三连冠纪录。", game: "CS2", date: "2026-05-30", tag: "赛事直播", image: "🏆", slug: "cs2-iem-cologne-major-2026-kickoff" },
+  { id: "n44", title: "VCT Masters London抽签出炉：6月6日伦敦铜盒竞技场开战", summary: "VALORANT伦敦大师赛分组抽签结果公布，12支战队齐聚英国，G2、EDG、PRX、TH四支头号种子直通淘汰赛。", game: "VALORANT", date: "2026-05-30", tag: "赛事直播", image: "🇬🇧", slug: "valorant-masters-london-draw" },
+  { id: "n45", title: "Cypher Spy Cam Bug再现被紧急禁用，新特工Miks上线", summary: "VALORANT经典Bug——Cypher摄像头武器化漏洞再次出现，Riot紧急禁用该特工。此前Neon因NVIDIA漏洞被禁，新特工Miks成版本答案。", game: "VALORANT", date: "2026-05-29", tag: "行业资讯", image: "🔧", slug: "valorant-cypher-disabled" },
+  { id: "n46", title: "Legacy卫冕CAC冠军，Falcons七连亚NiKo直言不可接受", summary: "CS Asia Championships 2026决赛，巴西Legacy以3-1击败Falcons卫冕成功。Falcons惨遭七连亚，NiKo赛后直言「这是不可接受的」。", game: "CS2", date: "2026-05-24", tag: "赛事速报", image: "🇧🇷", slug: "cs2-legacy-cac-falcons-curse" },
+  { id: "n47", title: "LPL淘汰赛：TES 3-0横扫LGD，小天自称涅槃之王", summary: "LPL第二赛段淘汰赛首日，TES以3-0零封LGD晋级胜者组，打野Tian赛后自称「涅槃之王」登上热搜。同日AL零封EDG。", game: "LOL", date: "2026-05-29", tag: "赛事速报", image: "⚡", slug: "lpl-playoffs-tes-sweep-lgd" },
+  { id: "n48", title: "TI15直邀名单公布！7支战队直通上海，中国赛区2个名额", summary: "DOTA2国际邀请赛TI15将于8月重回上海东方体育中心，7支直邀战队公布包括Xtreme Gaming和Ame+fy组合，门票6月10日开售。", game: "DOTA2", date: "2026-05-28", tag: "赛事直播", image: "🎫", slug: "dota2-ti15-shanghai-invites" },
+  { id: "n49", title: "PGS Circuit 2：Made in Thailand夺冠，T1韩国战队强势崛起", summary: "PUBG Global Series Circuit 2首周战罢，Made in Thailand再夺一冠，韩国T1战队以16杀吃鸡的恐怖表现获得亚军锁定EWC名额。", game: "PUBG", date: "2026-05-26", tag: "赛事速报", image: "🇰🇷", slug: "pubg-pgs-circuit-2-t1-rise" },
+  { id: "n50", title: "LEC最疯狂一幕：G2 Soraka闪现沉默惊天翻盘KOI", summary: "LEC春季赛季后赛G2对阵Movistar KOI，G2在0-2落后且第五局基地被推边缘时，辅助Labrov的索拉卡闪现沉默开团逆转翻盘。", game: "LOL", date: "2026-05-28", tag: "赛事速报", image: "🌟", slug: "lol-lec-g2-soraka-comeback" },
 ];
 
