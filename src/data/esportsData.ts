@@ -532,8 +532,12 @@ export const STANDINGS: Team[] = [
 const PROXY_URL = 'https://dry-tooth-2d36.haoyunmeimei520.workers.dev';
 
 // 支持中英文队伍名的 vs 匹配
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, '').trim();
+}
+
 function extractTeams(title: string): [string, string] | null {
-  const clean = title.replace(/^[【\[\(（].*?[】\]\)）]\s*/, '');
+  const clean = stripHtml(title).replace(/^[【\[\(（].*?[】\]\)）]\s*/, '');
   const en = clean.match(/([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)\s*(?:vs|VS|v)\s*([A-Za-z0-9\u00C0-\u024F.]+(?:\s+[A-Za-z0-9\u00C0-\u024F.]+)?)/);
   if (en) return [en[1].trim(), en[2].trim()];
   const zh = clean.match(/([\u4e00-\u9fa5A-Za-z0-9]{2,8})\s*(?:vs|[Vv][Ss]|大战|对阵|对决)\s*([\u4e00-\u9fa5A-Za-z0-9]{2,8})/);
@@ -569,7 +573,7 @@ export async function fetchLiveMatches(): Promise<Match[]> {
       const gameInfo = GAMES.find(g => g.id === gameId);
       if (!gameInfo) continue;
 
-      const title = room.title || '';
+      const title = stripHtml(room.title || '');
       const viewers = room.viewers || 0;
       const teams = extractTeams(title);
       const stableId = `bilibili-${room.roomId}`;

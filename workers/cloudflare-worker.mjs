@@ -136,13 +136,14 @@ async function refreshFromBilibili() {
       if (rooms && rooms.length > 0) {
         rooms.sort((a, b) => (b.atten || 0) - (a.atten || 0));
         for (const r of rooms.slice(0, 5)) {
-          if (r.live_status === 1) {
+          if (r.live_status === 1 && r.online > 100) {
+            const cleanTitle = (r.title || '').replace(/<[^>]+>/g, '').trim();
             results.push({
               game,
               platform: 'bilibili',
               roomId: String(r.roomid),
               isLive: true,
-              title: r.title || null,
+              title: cleanTitle || null,
               viewers: r.online || 0,
               uname: r.uname || null,
             });

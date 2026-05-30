@@ -8,36 +8,35 @@ export default function LiveTicker() {
   useEffect(() => {
     fetchLiveMatches().then(all => {
       const items: string[] = [];
-      const live = all.filter((r: any) => r.isLive);
-      const upcoming = all.filter((r: any) => !r.isLive);
+      const live = all.filter((r: any) => r.status === 'live');
+      const upcoming = all.filter((r: any) => r.status === 'upcoming');
 
-      live.forEach(r => {
-        const m = r.match || {};
-        const title = m.teamA?.shortName && m.teamB?.shortName
-          ? `${m.teamA.shortName} vs ${m.teamB.shortName}`
-          : r.title || r.game;
-        items.push(`🔴 LIVE · ${title} · ${m.tournament || r.game} · ${m.teamA?.score ?? 0}:${m.teamB?.score ?? 0}`);
+      live.forEach((r: any) => {
+        const title = r.teamA?.shortName && r.teamB?.shortName
+          ? `${r.teamA.shortName} vs ${r.teamB.shortName}`
+          : `${r.game} 直播中`;
+        const score = `${r.teamA?.score ?? 0}:${r.teamB?.score ?? 0}`;
+        items.push(`🔴 LIVE · ${title} · ${r.tournament || r.game} · ${score}`);
       });
-      upcoming.forEach(r => {
-        const m = r.match || {};
-        const title = m.teamA?.shortName && m.teamB?.shortName
-          ? `${m.teamA.shortName} vs ${m.teamB.shortName}`
-          : r.title || r.game;
-        items.push(`⏰ ${title} · ${m.tournament || r.game} · ${m.startTime || '即将开始'}`);
+      upcoming.forEach((r: any) => {
+        const title = r.teamA?.shortName && r.teamB?.shortName
+          ? `${r.teamA.shortName} vs ${r.teamB.shortName}`
+          : `${r.game}`;
+        items.push(`⏰ ${title} · ${r.tournament || r.game} · ${r.startTime || '即将开始'}`);
       });
 
       if (items.length > 0) {
         setTickerItems(items);
       } else {
         setTickerItems([
-          '🔴 LIVE · JDG vs BLG · LPL春季赛 · 2:1',
-          '⏰ NAVI vs VIT · IEM卡托维兹 · 今晚20:00',
+          '🔴 LIVE · BLG vs WE · LPL淘汰赛 · 0:0',
+          '⏰ NAVI vs VIT · IEM科隆Major · 即将开始',
         ]);
       }
     }).catch(() => {
       setTickerItems([
-        '🔴 LIVE · JDG vs BLG · LPL春季赛 · 2:1',
-        '⏰ NAVI vs VIT · IEM卡托维兹 · 今晚20:00',
+        '🔴 LIVE · BLG vs WE · LPL淘汰赛 · 0:0',
+        '⏰ NAVI vs VIT · IEM科隆Major · 即将开始',
       ]);
     });
   }, []);
