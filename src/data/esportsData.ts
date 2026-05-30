@@ -1,4 +1,4 @@
-export type GameType = 'LOL' | 'CS2' | 'DOTA2' | 'VALORANT' | 'PUBG' | 'HONOR' | 'DELTA' | 'AB';
+export type GameType = 'LOL' | 'CS2' | 'DOTA2' | 'VALORANT' | 'PUBG' | 'HONOR' | 'DELTA' | 'AB' | 'JCC' | 'OJ';
 
 export interface Team {
   id: string;
@@ -64,6 +64,8 @@ export const GAMES: { id: GameType; name: string; color: string; bgColor: string
   { id: 'HONOR', name: '王者荣耀', color: '#00D4FF', bgColor: 'rgba(0,212,255,0.15)', emoji: '👑' },
   { id: 'DELTA', name: '三角洲行动', color: '#CD7F32', bgColor: 'rgba(205,127,50,0.15)', emoji: '🦅' },
   { id: 'AB', name: '暗区突围', color: '#2E8B57', bgColor: 'rgba(46,139,87,0.15)', emoji: '🎒' },
+  { id: 'JCC', name: '金铲铲之战', color: '#FFD700', bgColor: 'rgba(255,215,0,0.15)', emoji: '🪙' },
+  { id: 'OJ', name: '决战平安京', color: '#E87CC4', bgColor: 'rgba(232,124,196,0.15)', emoji: '⛩️' },
 ];
 
 export const MATCHES: Match[] = [
@@ -260,6 +262,30 @@ export const MATCHES: Match[] = [
     startTime: '今日 20:00',
     bestOf: 1,
   },
+  {
+    id: 'm18',
+    game: 'JCC',
+    tournament: 'JOC 2026夏季赛',
+    stage: '精英巡回赛',
+    teamA: { name: 'WBG.潇之助', shortName: '潇之助', logo: '🪙' },
+    teamB: { name: '叶神.不言', shortName: '不言', logo: '🍃' },
+    status: 'live',
+    startTime: '今日 16:00',
+    viewers: 528000,
+    bestOf: 1,
+  },
+  {
+    id: 'm19',
+    game: 'OJ',
+    tournament: 'OPL 2026夏季赛',
+    stage: '常规赛 第5周',
+    teamA: { name: 'LF战队', shortName: 'LF', logo: '🦁' },
+    teamB: { name: 'OMG战队', shortName: 'OMG', logo: '🌊' },
+    status: 'live',
+    startTime: '今日 18:00',
+    viewers: 312000,
+    bestOf: 5,
+  },
 ];
 
 export const TOURNAMENTS: Tournament[] = [
@@ -454,6 +480,30 @@ export const TOURNAMENTS: Tournament[] = [
     status: 'ongoing',
     region: '中国',
     teams: 30,
+  },
+  {
+    id: 't17',
+    name: 'JOC 2026夏季赛',
+    game: 'JCC',
+    logo: '🪙',
+    prizePool: '¥200万',
+    startDate: '2026-04-10',
+    endDate: '2026-07-20',
+    status: 'ongoing',
+    region: '中国',
+    teams: 64,
+  },
+  {
+    id: 't18',
+    name: 'OPL 2026夏季赛',
+    game: 'OJ',
+    logo: '⛩️',
+    prizePool: '¥300万',
+    startDate: '2026-04-15',
+    endDate: '2026-08-15',
+    status: 'ongoing',
+    region: '中国',
+    teams: 12,
   },
 ];
 
@@ -667,5 +717,7 @@ export const NEWS: News[] = [
   { id: "n48", title: "TI15直邀名单公布！7支战队直通上海，中国赛区2个名额", summary: "DOTA2国际邀请赛TI15将于8月重回上海东方体育中心，7支直邀战队公布包括Xtreme Gaming和Ame+fy组合，门票6月10日开售。", game: "DOTA2", date: "2026-05-28", tag: "赛事直播", image: "🎫", slug: "dota2-ti15-shanghai-invites" },
   { id: "n49", title: "PGS Circuit 2：Made in Thailand夺冠，T1韩国战队强势崛起", summary: "PUBG Global Series Circuit 2首周战罢，Made in Thailand再夺一冠，韩国T1战队以16杀吃鸡的恐怖表现获得亚军锁定EWC名额。", game: "PUBG", date: "2026-05-26", tag: "赛事速报", image: "🇰🇷", slug: "pubg-pgs-circuit-2-t1-rise" },
   { id: "n50", title: "LEC最疯狂一幕：G2 Soraka闪现沉默惊天翻盘KOI", summary: "LEC春季赛季后赛G2对阵Movistar KOI，G2在0-2落后且第五局基地被推边缘时，辅助Labrov的索拉卡闪现沉默开团逆转翻盘。", game: "LOL", date: "2026-05-28", tag: "赛事速报", image: "🌟", slug: "lol-lec-g2-soraka-comeback" },
+  { id: "n51", title: "JOC夏季赛精英巡回赛激战正酣，WBG.潇之助领跑积分榜", summary: "2026金铲铲之战公开赛夏季赛精英巡回赛火热进行中，WBG.潇之助以65分登顶积分榜，CN赛区与APAC赛区跨区对抗赛同步打响。", game: "JCC", date: "2026-05-30", tag: "赛事速报", image: "🪙", slug: "jcc-summer-elite-tour" },
+  { id: "n52", title: "OPL夏季赛常规赛激战：LF与OMG领跑积分榜", summary: "2026决战平安京职业联赛OPL夏季赛常规赛第五周战罢，LF战队以不败战绩领跑，OMG战队紧随其后，季后赛名额争夺进入白热化。", game: "OJ", date: "2026-05-29", tag: "赛事速报", image: "⛩️", slug: "opl-summer-2026" },
 ];
 

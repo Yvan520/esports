@@ -80,12 +80,15 @@ const FALLBACK_BILIBILI = {
   HONOR:  { roomId: '21144080', game: 'HONOR' },
   DELTA:  { roomId: '31250975', game: 'DELTA' },
   AB:     { roomId: '23927284', game: 'AB' },
+  JCC:    { roomId: '9292721',  game: 'JCC' },
+  OJ:     { roomId: '7623885',  game: 'OJ' },
 };
 
 const GAME_KEYWORDS = {
   LOL: '英雄联盟赛事', VALORANT: '无畏契约赛事', CS2: '完美世界电竞CS2',
   DOTA2: '完美世界电竞DOTA2', PUBG: 'PUBG赛事', HONOR: '王者荣耀赛事',
   DELTA: '三角洲行动赛事', AB: '暗区突围赛事',
+  JCC: '金铲铲之战', OJ: '决战平安京',
 };
 
 let liveCache = null;
