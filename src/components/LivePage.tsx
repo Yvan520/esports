@@ -13,7 +13,7 @@ import {
   Send,
   Settings,
 } from "lucide-react";
-import { NON_LIVE_MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
+import { MATCHES, GAMES, fetchLiveMatches, type Match } from "../data/esportsData";
 import StreamPlayer from "./StreamPlayer";
 
 interface LivePageProps {
@@ -48,9 +48,9 @@ const BOT_CHAT_TEMPLATES = [
 ];
 
 export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
-  const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
+  const [allMatches, setAllMatches] = useState<Match[]>(MATCHES);
   const [dataLoading, setDataLoading] = useState(true);
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(initialMatchId || NON_LIVE_MATCHES[0]?.id || null);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [initialSelectionDone, setInitialSelectionDone] = useState(false);
 
   useEffect(() => {
@@ -65,22 +65,20 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
 
   const liveMatches = allMatches.filter(m => m.status === 'live');
   const selectedMatch = selectedMatchId
-    ? allMatches.find(m => m.id === selectedMatchId) ?? null
-    : null;
+    ? allMatches.find(m => m.id === selectedMatchId) ?? liveMatches[0] ?? allMatches[0] ?? null
+    : liveMatches[0] ?? allMatches[0] ?? null;
 
-  // Auto-select on initial load: use initialMatchId if provided, else first match
+  // Auto-select on initial load: use initialMatchId if provided, else first live match
   useEffect(() => {
     if (initialSelectionDone) return;
     if (initialMatchId && allMatches.some(m => m.id === initialMatchId)) {
       setSelectedMatchId(initialMatchId);
       setInitialSelectionDone(true);
-    } else if (initialMatchId) {
-      return;
-    } else if (allMatches.length > 0) {
-      setSelectedMatchId(allMatches[0].id);
+    } else if (liveMatches.length > 0) {
+      setSelectedMatchId(liveMatches[0].id);
       setInitialSelectionDone(true);
     }
-  }, [initialSelectionDone, initialMatchId, allMatches]);
+  }, [initialSelectionDone, initialMatchId, liveMatches, allMatches]);
 
   const [notification, setNotification] = useState<string | null>("欢迎来到赛事直播大厅！参与实时预测即可获得竞技积分。");
 
@@ -336,7 +334,6 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="space-y-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {selectedMatch ? (<>
             {/* Left: Stream + Events + Match List */}
             <div className="lg:col-span-2 space-y-6">
               {/* Streaming Video Player */}
@@ -709,13 +706,6 @@ export default function LivePage({ onBack, initialMatchId }: LivePageProps) {
                 </form>
               </div>
             </div>
-            </>) : (
-              <div className="lg:col-span-3 flex flex-col items-center justify-center py-20">
-                <Tv className="h-16 w-16 text-slate-700 mb-4" />
-                <h3 className="text-lg font-bold text-slate-300 mb-2">暂无直播</h3>
-                <p className="text-sm text-slate-500">当前没有正在进行的比赛，请查看其他即将开始的赛事</p>
-              </div>
-            )}
           </div>
         </div>
       </main>
