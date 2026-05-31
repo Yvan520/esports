@@ -28,12 +28,12 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map(t => {
-          const game = GAMES.find(g => g.id === t.game);
-          const sc = statusConfig[t.status];
+        {filtered.map(tourn => {
+          const game = GAMES.find(g => g.id === tourn.game);
+          const sc = statusConfig[tourn.status];
           return (
             <div
-              key={t.id}
+              key={tourn.id}
               className="rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1"
               style={{
                 background: 'rgba(15,15,35,0.8)',
@@ -47,7 +47,7 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
                   backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
                   backgroundSize: '20px 20px'
                 }} />
-                <div className="text-6xl group-hover:scale-110 transition-transform duration-300">{t.logo}</div>
+                <div className="text-6xl group-hover:scale-110 transition-transform duration-300">{tourn.logo}</div>
                 <div className="absolute top-3 right-3">
                   <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ color: sc.color, background: sc.bg, border: `1px solid ${sc.border}` }}>
                     {sc.label}
@@ -55,21 +55,21 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
                 </div>
                 <div className="absolute bottom-3 left-3">
                   <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ color: game?.color, background: game?.bgColor }}>
-                    {game?.emoji} {t.game}
+                    {game?.emoji} {tourn.game}
                   </span>
                 </div>
               </div>
 
               {/* Content */}
               <div className="p-4">
-                <h3 className="text-white font-bold text-base mb-3 group-hover:text-indigo-300 transition-colors">{t.name}</h3>
+                <h3 className="text-white font-bold text-base mb-3 group-hover:text-indigo-300 transition-colors">{tourn.name}</h3>
 
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   {[
-                    { icon: '💰', label: t('tournaments.prizePool'), value: t.prizePool },
-                    { icon: '🌍', label: t('tournaments.region'), value: t.region },
-                    { icon: '👥', label: t('tournaments.teams'), value: `${t.teams}${t('tournaments.teamsUnit')}` },
-                    { icon: '📅', label: t('tournaments.date'), value: t.endDate },
+                    { icon: '💰', label: t('tournaments.prizePool'), value: tourn.prizePool },
+                    { icon: '🌍', label: t('tournaments.region'), value: tourn.region },
+                    { icon: '👥', label: t('tournaments.teams'), value: `${tourn.teams}${t('tournaments.teamsUnit')}` },
+                    { icon: '📅', label: t('tournaments.date'), value: tourn.endDate },
                   ].map(item => (
                     <div key={item.label} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
                       <div className="text-xs text-gray-500 mb-0.5">{item.icon} {item.label}</div>
@@ -81,7 +81,7 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
                 {/* Prize pool highlight */}
                 <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: `linear-gradient(135deg, ${game ? gameBg(game, '0.2') : 'rgba(99,102,241,0.2)'}, rgba(8,8,20,0.5))`, border: `1px solid ${game?.color}30` }}>
                   <span className="text-xs text-gray-400">{t('tournaments.prizePool')}</span>
-                  <span className="text-lg font-black" style={{ color: game?.color, fontFamily: 'Rajdhani, sans-serif' }}>{t.prizePool}</span>
+                  <span className="text-lg font-black" style={{ color: game?.color, fontFamily: 'Rajdhani, sans-serif' }}>{tourn.prizePool}</span>
                 </div>
               </div>
             </div>
