@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { GameType } from './data/esportsData';
+import { LangProvider } from './i18n/LanguageContext';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LiveTicker from './components/LiveTicker';
@@ -108,6 +109,7 @@ export default function App() {
   }
 
   return (
+    <LangProvider>
     <div style={{ background: '#080814', minHeight: '100vh', fontFamily: "'Noto Sans SC', sans-serif" }}>
       <SEO />
       <Navbar
@@ -173,5 +175,6 @@ export default function App() {
         ↑
       </button>
     </div>
+    </LangProvider>
   );
 }

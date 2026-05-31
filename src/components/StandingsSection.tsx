@@ -1,10 +1,12 @@
 import { STANDINGS, GAMES, GameType } from '../data/esportsData';
+import { useLang } from '../i18n/LanguageContext';
 
 interface StandingsSectionProps {
   activeGame: GameType | 'ALL';
 }
 
 export default function StandingsSection({ activeGame }: StandingsSectionProps) {
+  const { t } = useLang();
   const gameForStandings = activeGame === 'ALL' ? 'LOL' : activeGame;
   const standings = STANDINGS.filter(t => t.game === gameForStandings);
   const game = GAMES.find(g => g.id === gameForStandings);
@@ -20,38 +22,38 @@ export default function StandingsSection({ activeGame }: StandingsSectionProps) 
       <div className="flex items-end justify-between mb-8">
         <div>
           <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-            积分<span style={{ color: '#a5b4fc' }}>排行榜</span>
+            {t('standings.title')}
           </h2>
           <p className="text-gray-500 text-sm mt-1">
-            {activeGame === 'ALL' ? '显示 LPL 2025春季赛 · 切换游戏查看对应积分榜' : `${game?.name} 当前赛季积分榜`}
+            {t('standings.subtitle', { name: game?.name || '' })}
           </p>
         </div>
 
         {/* Legend */}
         <div className="hidden md:flex items-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(34,197,94,0.5)' }} /> 晋级区</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(245,158,11,0.5)' }} /> 附加赛</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(239,68,68,0.5)' }} /> 降级区</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(34,197,94,0.5)' }} /> {t('standings.promotion')}</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(245,158,11,0.5)' }} /> {t('standings.playoff')}</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded" style={{ background: 'rgba(239,68,68,0.5)' }} /> {t('standings.relegation')}</span>
         </div>
       </div>
 
       {standings.length === 0 ? (
         <div className="text-center py-20">
           <div className="text-6xl mb-4">📊</div>
-          <div className="text-gray-400">该游戏暂无积分数据</div>
-          <div className="text-gray-600 text-sm mt-2">请从上方筛选栏切换到其他游戏查看积分榜</div>
+          <div className="text-gray-400">{t('standings.none')}</div>
+          <div className="text-gray-600 text-sm mt-2">{t('standings.hint')}</div>
         </div>
       ) : (
         <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
           {/* Table header */}
           <div className="grid gap-4 px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider" style={{ background: 'rgba(255,255,255,0.03)', gridTemplateColumns: '50px 1fr 80px 80px 80px 80px 100px' }}>
-            <span>排名</span>
-            <span>战队</span>
-            <span className="text-center">胜</span>
-            <span className="text-center">负</span>
-            <span className="text-center">胜率</span>
-            <span className="text-center">积分</span>
-            <span className="text-center">赛季状态</span>
+            <span>{t('standings.rank')}</span>
+            <span>{t('standings.team')}</span>
+            <span className="text-center">{t('standings.win')}</span>
+            <span className="text-center">{t('standings.lose')}</span>
+            <span className="text-center">{t('standings.winRate')}</span>
+            <span className="text-center">{t('standings.points')}</span>
+            <span className="text-center">{t('standings.status')}</span>
           </div>
 
           {/* Rows */}
@@ -115,7 +117,7 @@ export default function StandingsSection({ activeGame }: StandingsSectionProps) 
                       color: isTop ? '#22c55e' : isPromo ? '#f59e0b' : isRel ? '#ef4444' : '#6b7280',
                       background: isTop ? 'rgba(34,197,94,0.1)' : isPromo ? 'rgba(245,158,11,0.1)' : isRel ? 'rgba(239,68,68,0.1)' : 'rgba(107,114,128,0.1)',
                     }}>
-                    {isTop ? '晋级区' : isPromo ? '附加赛' : isRel ? '降级区' : '常规'}
+                    {isTop ? t('standings.promotion') : isPromo ? t('standings.playoff') : isRel ? t('standings.relegation') : t('standings.normal')}
                   </span>
                 </div>
               </div>

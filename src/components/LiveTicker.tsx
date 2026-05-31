@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { fetchLiveMatches } from '../data/esportsData';
+import { useLang } from '../i18n/LanguageContext';
 
 export default function LiveTicker() {
+  const { t } = useLang();
   const contentRef = useRef<HTMLDivElement>(null);
   const [tickerItems, setTickerItems] = useState<string[]>([]);
 
@@ -14,7 +16,7 @@ export default function LiveTicker() {
       live.forEach((r: any) => {
         const title = r.teamA?.shortName && r.teamB?.shortName
           ? `${r.teamA.shortName} vs ${r.teamB.shortName}`
-          : `${r.game} 直播中`;
+          : `${r.game} ${t('stream.live')}`;
         const score = `${r.teamA?.score ?? 0}:${r.teamB?.score ?? 0}`;
         items.push(`🔴 LIVE · ${title} · ${r.tournament || r.game} · ${score}`);
       });
@@ -22,7 +24,7 @@ export default function LiveTicker() {
         const title = r.teamA?.shortName && r.teamB?.shortName
           ? `${r.teamA.shortName} vs ${r.teamB.shortName}`
           : `${r.game}`;
-        items.push(`⏰ ${title} · ${r.tournament || r.game} · ${r.startTime || '即将开始'}`);
+        items.push(`⏰ ${title} · ${r.tournament || r.game} · ${r.startTime || t('stream.upcoming')}`);
       });
 
       if (items.length > 0) {
@@ -69,7 +71,7 @@ export default function LiveTicker() {
         <span className="flex items-center gap-1.5 text-xs font-bold text-red-400 px-2 py-1 rounded-full" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', whiteSpace: 'nowrap' }}>
           <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping absolute" />
           <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-          <span className="ml-1">滚动播报</span>
+          <span className="ml-1">{t('ticker.label')}</span>
         </span>
       </div>
       <div ref={contentRef} className="flex items-center" style={{ willChange: 'transform', paddingLeft: '120px' }}>

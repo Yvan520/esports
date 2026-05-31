@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NON_LIVE_MATCHES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
 import MatchCard from './MatchCard';
+import { useLang } from '../i18n/LanguageContext';
 
 interface MatchesSectionProps {
   activeGame: GameType | 'ALL';
@@ -8,6 +9,7 @@ interface MatchesSectionProps {
 }
 
 export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSectionProps) {
+  const { t } = useLang();
   const [activeTab, setActiveTab] = useState<'all' | 'live' | 'upcoming' | 'finished'>('all');
   const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
 
@@ -25,10 +27,10 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
   });
 
   const tabs = [
-    { id: 'all', label: '全部', count: allMatches.filter(m => activeGame === 'ALL' || m.game === activeGame).length },
-    { id: 'live', label: '进行中', count: allMatches.filter(m => m.status === 'live' && (activeGame === 'ALL' || m.game === activeGame)).length },
-    { id: 'upcoming', label: '即将开始', count: allMatches.filter(m => m.status === 'upcoming' && (activeGame === 'ALL' || m.game === activeGame)).length },
-    { id: 'finished', label: '已结束', count: allMatches.filter(m => m.status === 'finished' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'all', label: t('matches.all'), count: allMatches.filter(m => activeGame === 'ALL' || m.game === activeGame).length },
+    { id: 'live', label: t('matches.live'), count: allMatches.filter(m => m.status === 'live' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'upcoming', label: t('matches.upcoming'), count: allMatches.filter(m => m.status === 'upcoming' && (activeGame === 'ALL' || m.game === activeGame)).length },
+    { id: 'finished', label: t('matches.finished'), count: allMatches.filter(m => m.status === 'finished' && (activeGame === 'ALL' || m.game === activeGame)).length },
   ] as const;
 
   return (
@@ -37,9 +39,9 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-            实时<span style={{ color: '#a5b4fc' }}>赛程</span>
+            <span style={{ color: '#a5b4fc' }}>{t('matches.title')}</span>
           </h2>
-          <p className="text-gray-500 text-sm mt-1">实时更新 · 比分直播</p>
+          <p className="text-gray-500 text-sm mt-1">{t('matches.subtitle')}</p>
         </div>
 
         {/* Tabs */}
@@ -71,7 +73,7 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
           <span className="flex items-center gap-1.5 text-red-400 text-sm font-semibold">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
             <span className="w-2 h-2 rounded-full bg-red-500 -ml-3.5" />
-            正在直播
+            {t('matches.liveLabel')}
           </span>
           <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, rgba(239,68,68,0.4), transparent)' }} />
         </div>
@@ -87,8 +89,8 @@ export default function MatchesSection({ activeGame, onWatchMatch }: MatchesSect
       ) : (
         <div className="text-center py-20">
           <div className="text-6xl mb-4">🎮</div>
-          <div className="text-gray-400 text-lg">暂无符合条件的赛事</div>
-          <div className="text-gray-600 text-sm mt-2">请尝试更换游戏或时间筛选</div>
+          <div className="text-gray-400 text-lg">{t('matches.none')}</div>
+          <div className="text-gray-600 text-sm mt-2">{t('matches.hint')}</div>
         </div>
       )}
     </section>

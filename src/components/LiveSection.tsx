@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { NON_LIVE_MATCHES, GAMES, GameType, fetchLiveMatches, type Match } from '../data/esportsData';
+import { useLang } from '../i18n/LanguageContext';
 
 interface LiveSectionProps {
   activeGame: GameType | 'ALL';
   onWatchMatch?: (matchId: string) => void;
 }
 
-function formatViewers(n: number): string {
-  if (n >= 10000) return `${(n / 10000).toFixed(1)}万`;
+function formatViewers(n: number, lang: 'zh' | 'en'): string {
+  if (n >= 10000) return lang === 'zh' ? `${(n / 10000).toFixed(1)}万` : `${(n / 1000).toFixed(1)}K`;
   return n.toString();
 }
 
 export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionProps) {
+  const { t, lang } = useLang();
   const [allMatches, setAllMatches] = useState<Match[]>(NON_LIVE_MATCHES);
 
   useEffect(() => {
@@ -35,11 +37,11 @@ export default function LiveSection({ activeGame, onWatchMatch }: LiveSectionPro
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
             <h2 className="text-2xl md:text-3xl font-black text-white" style={{ fontFamily: 'Rajdhani, sans-serif', textShadow: '0 0 15px rgba(99,102,241,0.5)' }}>
-              <span style={{ color: '#a5b4fc' }}>直播</span>赛事
+              <span style={{ color: '#a5b4fc' }}>{t('live.title')}</span>
             </h2>
           </div>
           <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', color: '#ef4444' }}>
-            {liveMatches.length} 场进行中
+            {t('live.count', { n: String(liveMatches.length) })}
           </span>
         </div>
       </div>
@@ -127,12 +129,12 @@ function LiveMatchCard({ match, featured, onWatch }: { match: Match; featured: b
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-xs text-gray-500">👁️</span>
-            <span className="text-xs text-gray-400">{match.viewers ? formatViewers(match.viewers) : '-'} 人在观看</span>
+            <span className="text-xs text-gray-400">{match.viewers ? formatViewers(match.viewers, lang) : '-'} {t('live.watching')}</span>
           </div>
           <button onClick={e => { e.stopPropagation(); onWatch(match.id); }}
             className="px-4 py-2 rounded-lg text-xs font-bold transition-all hover:opacity-90"
             style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.8), rgba(139,92,246,0.8))', color: 'white' }}>
-            🔴 进入直播
+            🔴 {t('live.enter')}
           </button>
         </div>
       </div>

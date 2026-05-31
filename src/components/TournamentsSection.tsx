@@ -1,16 +1,18 @@
 import { TOURNAMENTS, GAMES, GameType, gameBg } from '../data/esportsData';
+import { useLang } from '../i18n/LanguageContext';
 
 interface TournamentsSectionProps {
   activeGame: GameType | 'ALL';
 }
 
 export default function TournamentsSection({ activeGame }: TournamentsSectionProps) {
+  const { t } = useLang();
   const filtered = TOURNAMENTS.filter(t => activeGame === 'ALL' || t.game === activeGame);
 
   const statusConfig = {
-    ongoing: { label: '进行中', color: '#22c55e', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)' },
-    upcoming: { label: '即将开始', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)' },
-    finished: { label: '已结束', color: '#6b7280', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)' },
+    ongoing: { label: t('matches.live'), color: '#22c55e', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.3)' },
+    upcoming: { label: t('matches.upcoming'), color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)' },
+    finished: { label: t('matches.finished'), color: '#6b7280', bg: 'rgba(107,114,128,0.12)', border: 'rgba(107,114,128,0.3)' },
   };
 
   return (
@@ -18,11 +20,11 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
       <div className="flex items-end justify-between mb-8">
         <div>
           <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Rajdhani, sans-serif' }}>
-            顶级<span style={{ color: '#a5b4fc' }}>赛事</span>
+            {t('tournaments.title')}
           </h2>
-          <p className="text-gray-500 text-sm mt-1">全球电竞顶级赛事聚合</p>
+          <p className="text-gray-500 text-sm mt-1">{t('tournaments.subtitle')}</p>
         </div>
-        <button className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer">查看全部 →</button>
+        <button className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer">{t('tournaments.viewAll')}</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -64,10 +66,10 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
 
                 <div className="grid grid-cols-2 gap-2 mb-4">
                   {[
-                    { icon: '💰', label: '奖金池', value: t.prizePool },
-                    { icon: '🌍', label: '赛区', value: t.region },
-                    { icon: '👥', label: '参赛队伍', value: `${t.teams}支战队` },
-                    { icon: '📅', label: '日期', value: t.endDate },
+                    { icon: '💰', label: t('tournaments.prizePool'), value: t.prizePool },
+                    { icon: '🌍', label: t('tournaments.region'), value: t.region },
+                    { icon: '👥', label: t('tournaments.teams'), value: `${t.teams}${t('tournaments.teamsUnit')}` },
+                    { icon: '📅', label: t('tournaments.date'), value: t.endDate },
                   ].map(item => (
                     <div key={item.label} className="p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
                       <div className="text-xs text-gray-500 mb-0.5">{item.icon} {item.label}</div>
@@ -78,7 +80,7 @@ export default function TournamentsSection({ activeGame }: TournamentsSectionPro
 
                 {/* Prize pool highlight */}
                 <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: `linear-gradient(135deg, ${game ? gameBg(game, '0.2') : 'rgba(99,102,241,0.2)'}, rgba(8,8,20,0.5))`, border: `1px solid ${game?.color}30` }}>
-                  <span className="text-xs text-gray-400">奖金池</span>
+                  <span className="text-xs text-gray-400">{t('tournaments.prizePool')}</span>
                   <span className="text-lg font-black" style={{ color: game?.color, fontFamily: 'Rajdhani, sans-serif' }}>{t.prizePool}</span>
                 </div>
               </div>
